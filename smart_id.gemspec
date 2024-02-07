@@ -5,8 +5,8 @@ require "smart_id/version"
 Gem::Specification.new do |spec|
   spec.name          = "smart_id"
   spec.version       = SmartId::VERSION
-  spec.authors       = ["Kristaps Kulikovskis", "Sergei Tsõganov"]
-  spec.email         = ["kristaps.kulikovskis@gmail.com", "sergei.tsoganov@internet.ee"]
+  spec.authors       = ["Sergei Tsõganov"]
+  spec.email         = ["sergei.tsoganov@internet.ee"]
 
   spec.summary       = %q{Smart ID wrapper libary for using Smart ID in Ruby applications}
   spec.homepage      = "https://github.com/maricavor/smart-id-ruby-client"
