@@ -1,1 +1,1 @@
-# smart-id-ruby-client
+# Smart-ID Ruby client
