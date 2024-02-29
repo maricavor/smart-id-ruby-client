@@ -4,9 +4,9 @@ module SmartId::Api
 
     attr_reader :body, :requested_certificate_level
 
-    def initialize(response_body, hashed_data, certificate_level)
+    def initialize(response_body, hashed_data, requested_certificate_level)
       @body = response_body
-      @requested_certificate_level = certificate_level
+      @requested_certificate_level = requested_certificate_level
       validate!(hashed_data)
     end
 

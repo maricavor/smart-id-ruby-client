@@ -12,9 +12,9 @@ module SmartId::Utils
     end
 
     def equal_or_above?(requested_certificate_level)
-      certificate_level = certificate_level.upcase
+      requested_certificate_level = requested_certificate_level.upcase
 
-      return true if @certificate_level == certificate_level
+      return true if @certificate_level == requested_certificate_level
 
       # Check based on the predefined levels
       current_level = CERTIFICATE_LEVELS[@certificate_level]

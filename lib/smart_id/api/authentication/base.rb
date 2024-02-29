@@ -14,7 +14,7 @@ module SmartId::Api
 
       def initialize(**opts)
         @authentication_hash = opts[:authentication_hash]
-        @certificate_level = opts[:certificate_level]
+        @certificate_level = opts[:certificate_level] || SmartId.default_certificate_level
         @allowed_interactions_order = opts[:allowed_interactions_order]
       end
 
@@ -29,7 +29,7 @@ module SmartId::Api
         params = {
           relyingPartyUUID: SmartId.relying_party_uuid,
           relyingPartyName: SmartId.relying_party_name,
-          certificateLevel: @certificate_level || SmartId.default_certificate_level,
+          certificateLevel: @certificate_level,
           hash: authentication_hash.calculate_base64_digest,
           hashType: "SHA256"
         }
