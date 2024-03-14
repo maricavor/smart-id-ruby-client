@@ -1,5 +1,4 @@
 require "smart_id/api/authentication/base"
-require "smart_id/exceptions"
 
 module SmartId::Api
   module Authentication
@@ -14,7 +13,7 @@ module SmartId::Api
         @semantics_identifier = opts[:semantics_identifier]
 
         unless @country && @identity_number && @semantics_identifier
-          raise InvalidParamsError
+          raise SmartId::InvalidParamsError
         end
 
         super(**opts)
