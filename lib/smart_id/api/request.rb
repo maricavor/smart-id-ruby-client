@@ -44,12 +44,15 @@ module SmartId::Api
     private
 
     def default_attrs
-      {
+      attrs = {
         method: @method,
         url: @url,
         headers: { content_type: :json, accept: :json },
         timeout: SmartId.poller_timeout_seconds + 1
       }
+      attrs.merge!(ssl_config) if SmartId.tls_config
+
+      attrs
     end
 
     def get_request_attrs
@@ -63,6 +66,17 @@ module SmartId::Api
 
     def post_request_attrs
       default_attrs.merge(payload: JSON.generate(@params))
+    end
+
+    def ssl_config
+      config = {
+        ssl_version: SmartId.tls_config[:default_protocol],
+        verify_ssl: OpenSSL::SSL::VERIFY_PEER,
+        ssl_ciphers: SmartId.tls_config[:enabled_cipher_suites]
+      }
+      config.merge!(ssl_ca_file: SmartId.tls_config[:ca_file]) if SmartId.tls_config[:ca_file]
+
+      config
     end
   end
 end

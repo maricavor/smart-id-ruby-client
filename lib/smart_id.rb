@@ -26,6 +26,7 @@ module SmartId
   @@poller_timeout_seconds = 10
   @@truststore_path = nil
   @@truststore_password = nil
+  @@tls_config = nil
 
   def self.configure(&block)
     yield(self)
@@ -85,5 +86,13 @@ module SmartId
 
   def self.truststore_password
     @@truststore_password
+  end
+
+  def self.tls_config=(value)
+    @@tls_config = value
+  end
+
+  def self.tls_config
+    @@tls_config
   end
 end
