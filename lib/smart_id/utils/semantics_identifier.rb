@@ -6,7 +6,7 @@ module SmartId
       attr_reader :identifier
 
       IDENTITY_TYPES = %i[PAS IDC PNO].freeze
-      COUNTRY_CODES = %i[EE LT LV].freeze
+      COUNTRY_CODES = %i[EE LT LV BE].freeze
 
       def initialize(*args)
         case args.size
