@@ -38,7 +38,11 @@ module SmartId::Api
                 get_request_attrs
               end
 
-      RestClient::Request.execute(**attrs)
+      @logger.debug("Executing request with attributes: #{attrs}")
+      response = RestClient::Request.execute(**attrs)
+      @logger.debug("Received response: #{response}")
+
+      response
     end
 
     private
