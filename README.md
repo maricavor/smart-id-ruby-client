@@ -22,6 +22,22 @@ gem install smart_id
 require "smart_id"
 ```
 
+## Logging
+
+The library uses `SmartId.logger` for connector-level logs.
+By default, logger level is `WARN`.
+
+```ruby
+require "logger"
+require "smart_id"
+
+SmartId.logger = Logger.new($stdout)
+SmartId.logger.level = Logger::DEBUG
+```
+
+At `DEBUG` level, request lifecycle logs include HTTP method, URL and response status.
+Request/response bodies are not logged by default.
+
 ## Development
 
 After checking out the repo, run:

@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+require_relative "errors/error"
+require_relative "errors/session_not_found_error"
+require_relative "errors/relying_party_account_configuration_error"
+require_relative "errors/user_account_not_found_error"
+require_relative "errors/server_maintenance_error"
+require_relative "errors/person_should_view_smart_id_portal_error"
+require_relative "errors/no_suitable_account_of_requested_type_found_error"
+require_relative "errors/unsupported_client_api_version_error"
+require_relative "errors/request_validation_error"
+require_relative "errors/request_setup_error"
+require_relative "errors/response_error"
+require_relative "errors/unprocessable_response_error"
+require_relative "errors/session_not_complete_error"
+require_relative "errors/session_end_result_error"
