@@ -26,7 +26,7 @@ module SmartId
       end
 
       def with_capabilities(*capabilities)
-        @capabilities = capabilities.flatten.compact.map(&:to_s).map(&:strip).reject(&:empty?).uniq
+        @capabilities = normalize_capabilities(capabilities)
         self
       end
 
@@ -76,9 +76,7 @@ module SmartId
       end
 
       def request_properties
-        return nil if @share_md_client_ip_address.nil?
-
-        { shareMdClientIpAddress: @share_md_client_ip_address }
+        request_properties_for_share_md(@share_md_client_ip_address)
       end
 
       def validate_initial_callback_url
@@ -108,35 +106,6 @@ module SmartId
         end
       end
 
-      def fetch_value(container, key)
-        return nil if container.nil?
-
-        key_str = key.to_s
-        snake_key = underscore_key(key_str)
-        candidates = [key, key_str, snake_key.to_sym, snake_key].uniq
-
-        if container.respond_to?(:[])
-          candidates.each do |candidate|
-            value = container[candidate]
-            return value unless value.nil?
-          end
-        end
-
-        candidates.each do |candidate|
-          method_name = candidate.is_a?(Symbol) ? candidate : candidate.to_s
-          return container.public_send(method_name) if container.respond_to?(method_name)
-        end
-
-        nil
-      end
-
-      def underscore_key(value)
-        value.to_s.gsub(/([A-Z])/, "_\\1").downcase.sub(/\A_/, "")
-      end
-
-      def blank?(value)
-        value.nil? || value.to_s.strip.empty?
-      end
     end
   end
 end

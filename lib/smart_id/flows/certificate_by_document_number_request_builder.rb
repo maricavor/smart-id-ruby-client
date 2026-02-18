@@ -122,15 +122,6 @@ module SmartId
         end
       end
 
-      def fetch_value(container, key)
-        return nil unless container.respond_to?(:[])
-
-        container[key] || container[key.to_s]
-      end
-
-      def blank?(value)
-        value.nil? || value.to_s.strip.empty?
-      end
     end
   end
 end

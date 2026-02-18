@@ -25,7 +25,7 @@ module SmartId
       end
 
       def with_capabilities(*capabilities)
-        @capabilities = capabilities.flatten.compact.map(&:to_s).map(&:strip).reject(&:empty?).uniq
+        @capabilities = normalize_capabilities(capabilities)
         self
       end
 
@@ -81,9 +81,7 @@ module SmartId
       end
 
       def request_properties
-        return nil if @share_md_client_ip_address.nil?
-
-        { shareMdClientIpAddress: @share_md_client_ip_address }
+        request_properties_for_share_md(@share_md_client_ip_address)
       end
 
       def validate_response_parameters(response)
@@ -93,15 +91,6 @@ module SmartId
         end
       end
 
-      def fetch_value(container, key)
-        return nil unless container.respond_to?(:[])
-
-        container[key] || container[key.to_s]
-      end
-
-      def blank?(value)
-        value.nil? || value.to_s.strip.empty?
-      end
     end
   end
 end

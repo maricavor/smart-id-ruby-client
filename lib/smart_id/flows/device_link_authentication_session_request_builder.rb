@@ -56,7 +56,7 @@ module SmartId
       end
 
       def with_capabilities(*capabilities)
-        @capabilities = capabilities.flatten.compact.map(&:to_s).uniq
+        @capabilities = normalize_capabilities(capabilities, strip: false, reject_empty: false)
         self
       end
 
@@ -186,23 +186,7 @@ module SmartId
       end
 
       def request_properties
-        return nil if @share_md_client_ip_address.nil?
-
-        { shareMdClientIpAddress: @share_md_client_ip_address }
-      end
-
-      def encode_interactions(interactions)
-        Base64.strict_encode64(JSON.generate(interactions.map { |interaction| normalize_interaction(interaction) }))
-      end
-
-      def normalize_interaction(interaction)
-        if interaction.respond_to?(:to_h)
-          interaction.to_h.transform_keys(&:to_sym)
-        elsif interaction.is_a?(Hash)
-          interaction.transform_keys(&:to_sym)
-        else
-          raise SmartId::Errors::RequestSetupError, "Unsupported interaction object type: #{interaction.class}"
-        end
+        request_properties_for_share_md(@share_md_client_ip_address)
       end
 
       def validate_response_parameters(response)
@@ -224,19 +208,8 @@ module SmartId
         end
       end
 
-      def fetch_value(container, key)
-        return nil unless container.respond_to?(:[])
-
-        container[key] || container[key.to_s]
-      end
-
       def interaction_type(interaction)
-        normalized = normalize_interaction(interaction)
-        normalized[:type]
-      end
-
-      def blank?(value)
-        value.nil? || value.to_s.strip.empty?
+        normalize_interaction(interaction)[:type]
       end
     end
   end
