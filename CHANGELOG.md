@@ -2,6 +2,10 @@
 
 - Implemented `NotificationAuthenticationSessionRequestBuilder` with Java-parity request mapping, validation rules, identifier routing, and response validation.
 - Implemented `NotificationSignatureSessionRequestBuilder` with Java-parity request mapping, digest input handling, validation rules, identifier routing, and response validation.
+- Implemented `DeviceLinkSignatureSessionRequestBuilder` with Java-parity request mapping, digest input handling, identifier routing, callback URL validation, and response validation.
+- Implemented `DeviceLinkCertificateChoiceSessionRequestBuilder` with Java-parity request mapping, nonce/callback validation, and response validation.
+- Implemented `NotificationCertificateChoiceSessionRequestBuilder` with Java-parity request mapping, semantics-identifier requirement, nonce validation, and response validation.
+- Implemented `LinkedNotificationSignatureSessionRequestBuilder` with Java-parity request mapping, digest input handling, linked-session validation, and response validation.
 - Implemented `CertificateByDocumentNumberRequestBuilder` with Java-parity request/response validation, certificate parsing, and `DocumentUnusableError` handling.
 - Added focused specs for notification authentication/signature builders and client factory wiring.
 - Added focused specs for certificate-by-document-number builder and client factory wiring.

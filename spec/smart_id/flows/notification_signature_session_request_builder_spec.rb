@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
-  SignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
-  SignableHashInput = Struct.new(:hash_to_sign, :hash_algorithm)
+  NotificationSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
+  NotificationSignableHashInput = Struct.new(:hash_to_sign, :hash_algorithm)
 
-  class TestConnector
+  class NotificationSignatureTestConnector
     attr_reader :called_method, :called_request, :called_argument
 
     def init_notification_signature(request, semantics_identifier)
@@ -22,7 +22,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     end
   end
 
-  let(:connector) { TestConnector.new }
+  let(:connector) { NotificationSignatureTestConnector.new }
   let(:builder) { described_class.new(connector) }
 
   before do
@@ -57,7 +57,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "allows overriding hash algorithm for signable data input object" do
-    builder.with_signable_data(SignableDataInput.new("Test data", "SHA-256"))
+    builder.with_signable_data(NotificationSignableDataInput.new("Test data", "SHA-256"))
     builder.with_semantics_identifier("PNOEE-30303039914")
     builder.init_signature_session
 
@@ -85,7 +85,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
 
   it "allows overriding hash algorithm for signable hash input object" do
     builder.with_signable_data(nil)
-    builder.with_signable_hash(SignableHashInput.new("raw hash bytes", "SHA-384"))
+    builder.with_signable_hash(NotificationSignableHashInput.new("raw hash bytes", "SHA-384"))
     builder.with_semantics_identifier("PNOEE-30303039914")
     builder.init_signature_session
 
@@ -165,7 +165,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc is missing" do
-    broken_connector = TestConnector.new
+    broken_connector = NotificationSignatureTestConnector.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => nil })
     local_builder = described_class.new(broken_connector)
@@ -182,7 +182,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.type is missing" do
-    broken_connector = TestConnector.new
+    broken_connector = NotificationSignatureTestConnector.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "", "value" => "4927" } })
     local_builder = described_class.new(broken_connector)
@@ -199,7 +199,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.value is missing" do
-    broken_connector = TestConnector.new
+    broken_connector = NotificationSignatureTestConnector.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "" } })
     local_builder = described_class.new(broken_connector)
@@ -216,7 +216,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.value does not match required pattern" do
-    broken_connector = TestConnector.new
+    broken_connector = NotificationSignatureTestConnector.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "abcd" } })
     local_builder = described_class.new(broken_connector)
@@ -233,7 +233,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.type is unsupported" do
-    broken_connector = TestConnector.new
+    broken_connector = NotificationSignatureTestConnector.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric6", "value" => "4927" } })
     local_builder = described_class.new(broken_connector)

@@ -33,6 +33,38 @@ RSpec.describe SmartId::Client do
     expect(builder.relying_party_name).to eq(client.relying_party_name)
   end
 
+  it "creates linked notification signature builder with default relying party values" do
+    builder = client.create_linked_notification_signature
+
+    expect(builder).to be_a(SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
+  it "creates device-link signature builder with default relying party values" do
+    builder = client.create_device_link_signature
+
+    expect(builder).to be_a(SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
+  it "creates device-link certificate-choice builder with default relying party values" do
+    builder = client.create_device_link_certificate_request
+
+    expect(builder).to be_a(SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
+  it "creates notification certificate-choice builder with default relying party values" do
+    builder = client.create_notification_certificate_choice
+
+    expect(builder).to be_a(SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
   it "creates certificate-by-document-number builder with default relying party values" do
     builder = client.create_certificate_by_document_number
 

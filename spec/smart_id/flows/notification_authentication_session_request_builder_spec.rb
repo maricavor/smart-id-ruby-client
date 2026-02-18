@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder do
-  class TestConnector
+  class NotificationAuthenticationTestConnector
     attr_reader :called_method, :called_request, :called_argument
 
     def init_notification_authentication(request, semantics_identifier)
@@ -19,7 +19,7 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
     end
   end
 
-  let(:connector) { TestConnector.new }
+  let(:connector) { NotificationAuthenticationTestConnector.new }
   let(:builder) { described_class.new(connector) }
   let(:rp_challenge) { Base64.strict_encode64("x" * 32) }
 

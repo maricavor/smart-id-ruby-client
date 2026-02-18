@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
-  class TestConnector
+  class DeviceLinkAuthenticationTestConnector
     attr_reader :called_method, :called_request, :called_argument
 
     def init_anonymous_device_link_authentication(request)
@@ -25,7 +25,7 @@ RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
     end
   end
 
-  let(:connector) { TestConnector.new }
+  let(:connector) { DeviceLinkAuthenticationTestConnector.new }
   let(:builder) { described_class.new(connector) }
   let(:rp_challenge) { Base64.strict_encode64("x" * 32) }
 

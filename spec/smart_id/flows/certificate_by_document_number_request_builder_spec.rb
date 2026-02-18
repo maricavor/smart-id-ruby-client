@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
-  class TestConnector
+  class CertificateByDocumentNumberTestConnector
     attr_reader :called_document_number, :called_request
     attr_accessor :response
 
@@ -12,7 +12,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
     end
   end
 
-  let(:connector) { TestConnector.new }
+  let(:connector) { CertificateByDocumentNumberTestConnector.new }
   let(:builder) { described_class.new(connector) }
   let(:certificate_base64) { Base64.strict_encode64(generated_certificate.to_der) }
   let(:generated_certificate) do
