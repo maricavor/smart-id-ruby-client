@@ -14,6 +14,10 @@ module SmartId
         "QSCD" => 3
       }.freeze
 
+      def initialize(certificate_validator: nil)
+        @certificate_validator = certificate_validator
+      end
+
       def validate(cert:, requested_level:)
         if cert.nil?
           raise SmartId::Errors::UnprocessableResponseError, "Authentication session status field 'cert' is missing"
@@ -33,6 +37,7 @@ module SmartId
 
         certificate = parse_certificate(cert.value)
         validate_certificate_is_currently_valid(certificate)
+        @certificate_validator.validate(certificate) if @certificate_validator
         validate_certificate_purpose(certificate, actual_level)
         certificate
       end
