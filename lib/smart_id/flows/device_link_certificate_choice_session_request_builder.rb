@@ -2,6 +2,7 @@
 
 module SmartId
   module Flows
+    # Builds device link certificate choice session requests.
     class DeviceLinkCertificateChoiceSessionRequestBuilder < BaseBuilder
       INITIAL_CALLBACK_URL_PATTERN = %r{\Ahttps://[^|]+\z}.freeze
       NONCE_MAX_LENGTH = 30

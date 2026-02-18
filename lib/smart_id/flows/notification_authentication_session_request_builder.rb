@@ -4,6 +4,7 @@ require "base64"
 
 module SmartId
   module Flows
+    # Builds notification authentication session requests.
     class NotificationAuthenticationSessionRequestBuilder < BaseBuilder
       RP_CHALLENGE_MIN_LENGTH = 44
       RP_CHALLENGE_MAX_LENGTH = 88

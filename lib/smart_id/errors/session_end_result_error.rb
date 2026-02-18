@@ -2,6 +2,7 @@
 
 module SmartId
   module Errors
+    # Represents session end result error condition.
     class SessionEndResultError < Error
       attr_reader :end_result
 

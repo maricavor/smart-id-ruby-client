@@ -5,6 +5,7 @@ require "json"
 
 module SmartId
   module Flows
+    # Base builder with shared helper methods for request builders.
     class BaseBuilder
       attr_reader :connector, :relying_party_uuid, :relying_party_name
 

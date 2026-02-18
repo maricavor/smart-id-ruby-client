@@ -2,6 +2,7 @@
 
 module SmartId
   module Errors
+    # Represents server maintenance error condition.
     class ServerMaintenanceError < Error; end
   end
 end

@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Flows
+    # Builds notification signature session requests.
     class NotificationSignatureSessionRequestBuilder < BaseBuilder
       VERIFICATION_CODE_PATTERN = /\A[0-9]{4}\z/.freeze
       NONCE_MAX_LENGTH = 30

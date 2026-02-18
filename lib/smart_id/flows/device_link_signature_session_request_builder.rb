@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Flows
+    # Builds device link signature session requests.
     class DeviceLinkSignatureSessionRequestBuilder < BaseBuilder
       INITIAL_CALLBACK_URL_PATTERN = %r{\Ahttps://[^|]+\z}.freeze
       NONCE_MAX_LENGTH = 30

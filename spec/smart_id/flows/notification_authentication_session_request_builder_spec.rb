@@ -51,6 +51,15 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
     expect(connector.called_argument).to eq("PNOEE-30303039914")
   end
 
+  it "accepts NotificationInteraction objects in interactions list" do
+    builder.with_document_number("PNOLT-40504040001-MOCK-Q")
+    builder.with_interactions([SmartId::NotificationInteraction.display_text_and_pin("Log in")])
+    builder.init_authentication_session
+
+    decoded_interactions = JSON.parse(Base64.decode64(connector.called_request[:interactions]))
+    expect(decoded_interactions).to eq([{ "type" => "displayTextAndPIN", "displayText60" => "Log in" }])
+  end
+
   it "raises when both semantics identifier and document number are set" do
     builder.with_document_number("PNOLT-40504040001-MOCK-Q")
     builder.with_semantics_identifier("PNOEE-30303039914")

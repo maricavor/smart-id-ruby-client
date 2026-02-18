@@ -2,6 +2,7 @@
 
 module SmartId
   module Errors
+    # Represents user refused confirmation message error condition.
     class UserRefusedConfirmationMessageError < SessionEndResultError
       def initialize
         super("USER_REFUSED_INTERACTION", "User cancelled on confirmationMessage screen")

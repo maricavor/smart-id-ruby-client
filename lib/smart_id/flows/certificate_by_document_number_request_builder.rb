@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Flows
+    # Builds certificate by document number requests.
     class CertificateByDocumentNumberRequestBuilder < BaseBuilder
       BASE64_PATTERN = /\A[A-Za-z0-9+\/]+={0,2}\z/.freeze
       SUPPORTED_STATES = %w[OK DOCUMENT_UNUSABLE].freeze

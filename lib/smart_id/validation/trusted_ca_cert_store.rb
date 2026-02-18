@@ -2,6 +2,7 @@
 
 module SmartId
   module Validation
+    # Container for trust anchors and CA certificates used in validation.
     class TrustedCaCertStore
       attr_reader :trust_anchors, :trusted_ca_certificates, :ocsp_enabled
 

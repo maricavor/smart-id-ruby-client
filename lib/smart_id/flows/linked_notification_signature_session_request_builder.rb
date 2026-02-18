@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Flows
+    # Builds linked notification signature session requests.
     class LinkedNotificationSignatureSessionRequestBuilder < BaseBuilder
       NONCE_MAX_LENGTH = 30
       DEFAULT_HASH_ALGORITHM = "SHA-512"

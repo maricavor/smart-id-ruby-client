@@ -2,6 +2,7 @@
 
 module SmartId
   module Models
+    # Represents validated certificate choice response data.
     class CertificateChoiceResponse
       attr_reader :end_result, :certificate, :certificate_level, :document_number, :interaction_flow_used, :device_ip_address
 

@@ -2,6 +2,7 @@
 
 module SmartId
   module Flows
+    # Builds notification certificate choice session requests.
     class NotificationCertificateChoiceSessionRequestBuilder < BaseBuilder
       NONCE_MAX_LENGTH = 30
 

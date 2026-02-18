@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Validation
+    # Maps authentication certificates to typed identity models.
     class AuthenticationIdentityMapper
       DATE_OF_BIRTH_OID = "1.3.6.1.5.5.7.9.1"
 

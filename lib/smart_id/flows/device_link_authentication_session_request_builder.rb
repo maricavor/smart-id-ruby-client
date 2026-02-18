@@ -4,6 +4,7 @@ require "base64"
 
 module SmartId
   module Flows
+    # Builds device link authentication session requests.
     class DeviceLinkAuthenticationSessionRequestBuilder < BaseBuilder
       INITIAL_CALLBACK_URL_PATTERN = %r{\Ahttps://[^|]+\z}.freeze
       RP_CHALLENGE_MIN_LENGTH = 44
@@ -144,15 +145,16 @@ module SmartId
       end
 
       def validate_interactions
-        if @interactions.nil? || @interactions.empty?
+        normalized_interactions = normalize_interactions(@interactions)
+        if normalized_interactions.empty?
           raise SmartId::Errors::RequestSetupError, "Value for 'interactions' cannot be empty"
         end
 
-        interaction_types = @interactions.map { |interaction| interaction_type(interaction) }
+        interaction_types = normalized_interactions.map { |interaction| interaction[:type] }
         if interaction_types.any?(&:nil?)
           raise SmartId::Errors::RequestSetupError, "Each interaction must include a 'type' value"
         end
-        if interaction_types.uniq.length != @interactions.length
+        if interaction_types.uniq.length != interaction_types.length
           raise SmartId::Errors::RequestSetupError, "Value for 'interactions' cannot contain duplicate types"
         end
       end
@@ -208,9 +210,6 @@ module SmartId
         end
       end
 
-      def interaction_type(interaction)
-        normalize_interaction(interaction)[:type]
-      end
     end
   end
 end

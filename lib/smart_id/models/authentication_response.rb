@@ -2,6 +2,7 @@
 
 module SmartId
   module Models
+    # Represents validated authentication response data.
     class AuthenticationResponse
       attr_reader :end_result, :document_number, :signature_value, :server_random,
                   :user_challenge, :flow_type, :signature_algorithm, :certificate_value,

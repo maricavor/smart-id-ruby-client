@@ -2,6 +2,7 @@
 
 module SmartId
   module Models
+    # Represents validated signature response data.
     class SignatureResponse
       attr_reader :end_result, :signature_value_in_base64, :algorithm_name, :flow_type, :certificate,
                   :requested_certificate_level, :certificate_level, :document_number, :interaction_flow_used,

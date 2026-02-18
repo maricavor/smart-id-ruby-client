@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Validation
+    # Validates notification authentication response data.
     class NotificationAuthenticationResponseValidator
       def initialize(
         device_link_authentication_response_validator: DeviceLinkAuthenticationResponseValidator.new,

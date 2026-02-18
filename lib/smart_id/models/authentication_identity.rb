@@ -2,6 +2,7 @@
 
 module SmartId
   module Models
+    # Represents mapped identity details from authentication certificate.
     class AuthenticationIdentity
       attr_reader :given_name, :surname, :identity_number, :country, :auth_certificate, :date_of_birth
 

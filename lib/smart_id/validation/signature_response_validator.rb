@@ -5,6 +5,7 @@ require "openssl"
 
 module SmartId
   module Validation
+    # Validates signature response data.
     class SignatureResponseValidator
       BASE64_PATTERN = /\A[a-zA-Z0-9+\/]+={0,2}\z/.freeze
       CERTIFICATE_LEVEL_ORDER = { "ADVANCED" => 1, "QUALIFIED" => 2, "QSCD" => 2 }.freeze
@@ -21,19 +22,6 @@ module SmartId
         "SHA3-256" => 32,
         "SHA3-384" => 48,
         "SHA3-512" => 64
-      }.freeze
-
-      END_RESULT_MESSAGES = {
-        "USER_REFUSED" => "User pressed cancel in app",
-        "TIMEOUT" => "Session timed out without getting any response from user",
-        "DOCUMENT_UNUSABLE" => "Document is unusable. User must either check his/her Smart-ID mobile application or turn to customer support for getting the exact reason.",
-        "WRONG_VC" => "User selected wrong verification code",
-        "REQUIRED_INTERACTION_NOT_SUPPORTED_BY_APP" => "User app version does not support any of the provided interactions.",
-        "USER_REFUSED_CERT_CHOICE" => "User has multiple accounts and pressed Cancel on device choice screen on any device.",
-        "PROTOCOL_FAILURE" => "A logical error occurred in the signing protocol.",
-        "EXPECTED_LINKED_SESSION" => "The app received a different transaction while waiting for the linked session that follows the device-link based cert-choice session",
-        "SERVER_ERROR" => "Process was terminated due to server-side technical error",
-        "ACCOUNT_UNUSABLE" => "The account is currently unusable"
       }.freeze
 
       def initialize(certificate_validator: CertificateValidator.new)
@@ -70,7 +58,7 @@ module SmartId
         end
 
         unless result.end_result == "OK"
-          handle_error_result(result)
+          ErrorResultHandler.handle(result)
         end
 
         if blank?(result.document_number)
@@ -310,38 +298,6 @@ module SmartId
         unless params.trailer_field == SUPPORTED_TRAILER_FIELD
           raise SmartId::Errors::UnprocessableResponseError,
                 "Signature status field `signature.signatureAlgorithmParameters.trailerField` has unsupported value"
-        end
-      end
-
-      def handle_error_result(result)
-        if result.end_result == "USER_REFUSED_INTERACTION"
-          raise_user_refused_interaction_error(result)
-        end
-        if result.end_result == "DOCUMENT_UNUSABLE"
-          raise SmartId::Errors::DocumentUnusableError
-        end
-
-        raise SmartId::Errors::SessionEndResultError.new(
-          result.end_result,
-          END_RESULT_MESSAGES[result.end_result] || "Unexpected session result: #{result.end_result}"
-        )
-      end
-
-      def raise_user_refused_interaction_error(result)
-        interaction = result.details&.interaction
-        if blank?(interaction)
-          raise SmartId::Errors::UnprocessableResponseError, "Details for refused interaction are missing"
-        end
-
-        case interaction
-        when "displayTextAndPIN"
-          raise SmartId::Errors::UserRefusedDisplayTextAndPinError
-        when "confirmationMessage"
-          raise SmartId::Errors::UserRefusedConfirmationMessageError
-        when "confirmationMessageAndVerificationCodeChoice"
-          raise SmartId::Errors::UserRefusedConfirmationMessageWithVerificationChoiceError
-        else
-          raise SmartId::Errors::UnprocessableResponseError, "Unexpected interaction type: #{interaction}"
         end
       end
 

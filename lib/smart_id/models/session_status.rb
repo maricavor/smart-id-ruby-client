@@ -2,6 +2,7 @@
 
 module SmartId
   module Models
+    # Represents Smart-ID session status response data.
     class SessionStatus
       attr_reader :state, :result, :signature_protocol, :signature, :cert,
                   :ignored_properties, :interaction_type_used, :device_ip_address
@@ -55,6 +56,7 @@ module SmartId
       private_class_method :fetch
     end
 
+    # Represents session result data returned by Smart-ID.
     class SessionResult
       attr_reader :end_result, :document_number, :details
 
@@ -80,6 +82,7 @@ module SmartId
       private_class_method :fetch
     end
 
+    # Represents additional result details for a session.
     class SessionResultDetails
       attr_reader :interaction
 
@@ -99,6 +102,7 @@ module SmartId
       private_class_method :fetch
     end
 
+    # Represents signature details in session status response.
     class SessionSignature
       attr_reader :value, :server_random, :user_challenge, :flow_type,
                   :signature_algorithm, :signature_algorithm_parameters
@@ -140,6 +144,7 @@ module SmartId
       private_class_method :fetch
     end
 
+    # Represents signature algorithm parameters for session signature.
     class SessionSignatureAlgorithmParameters
       attr_reader :hash_algorithm, :mask_gen_algorithm, :salt_length, :trailer_field
 
@@ -167,6 +172,7 @@ module SmartId
       private_class_method :fetch
     end
 
+    # Represents certificate payload in session status response.
     class SessionCertificate
       attr_reader :value, :certificate_level
 
