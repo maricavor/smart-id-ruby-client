@@ -2,7 +2,6 @@
 
 module SmartId
   # Main entry point for using Smart-ID services.
-  # Mirrors the Java SmartIdClient surface so v3 flows can be added incrementally.
   class Client
     attr_accessor :relying_party_uuid, :relying_party_name, :host_url,
                   :network_connection_config, :configured_connection

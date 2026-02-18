@@ -17,6 +17,22 @@ RSpec.describe SmartId::Client do
     expect(builder.relying_party_name).to eq(client.relying_party_name)
   end
 
+  it "creates notification authentication builder with default relying party values" do
+    builder = client.create_notification_authentication
+
+    expect(builder).to be_a(SmartId::Flows::NotificationAuthenticationSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
+  it "creates notification signature builder with default relying party values" do
+    builder = client.create_notification_signature
+
+    expect(builder).to be_a(SmartId::Flows::NotificationSignatureSessionRequestBuilder)
+    expect(builder.relying_party_uuid).to eq(client.relying_party_uuid)
+    expect(builder.relying_party_name).to eq(client.relying_party_name)
+  end
+
   it "creates a session status poller with default polling interval" do
     poller = client.session_status_poller
 
