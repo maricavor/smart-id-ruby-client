@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
+RSpec.describe SmartIdRuby::Validation::DeviceLinkAuthenticationResponseValidator do
   subject(:validator) { described_class.new }
   let(:schema_name) { "smart-id-demo" }
   let(:brokered_rp_name) { nil }
@@ -29,37 +29,34 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     signed_status(flow_type: "QR", user_challenge: default_user_challenge)
   end
 
-  it "returns typed authentication response for valid status" do
-    response = validator.validate(valid_status, authentication_session_request, nil, schema_name, brokered_rp_name)
+  it "returns mapped authentication identity for valid status" do
+    identity = validator.validate(valid_status, authentication_session_request, nil, schema_name, brokered_rp_name)
 
-    expect(response).to be_a(SmartId::Models::AuthenticationResponse)
-    expect(response.end_result).to eq("OK")
-    expect(response.document_number).to eq("PNOLT-40504040001-MOCK-Q")
-    expect(response.certificate_level).to eq("ADVANCED")
+    expect(identity).to be_a(SmartIdRuby::Models::AuthenticationIdentity)
   end
 
   it "raises when session is not complete" do
-    running = SmartId::Models::SessionStatus.from_h(state: "RUNNING")
+    running = SmartIdRuby::Models::SessionStatus.from_h(state: "RUNNING")
 
     expect { validator.validate(running, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::SessionNotCompleteError
+      SmartIdRuby::Errors::SessionNotCompleteError
     )
   end
 
   it "raises mapped end-result error when endResult is not OK" do
-    timeout_status = SmartId::Models::SessionStatus.from_h(
+    timeout_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: { endResult: "TIMEOUT", documentNumber: "PNOLT-40504040001-MOCK-Q" }
     )
 
     expect { validator.validate(timeout_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::SessionEndResultError,
+      SmartIdRuby::Errors::SessionEndResultError,
       "Session timed out without getting any response from user"
     )
   end
 
   it "maps USER_REFUSED_INTERACTION displayTextAndPIN to specific exception class" do
-    refused_status = SmartId::Models::SessionStatus.from_h(
+    refused_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: {
         endResult: "USER_REFUSED_INTERACTION",
@@ -69,13 +66,13 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     )
 
     expect { validator.validate(refused_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UserRefusedDisplayTextAndPinError,
+      SmartIdRuby::Errors::UserRefusedDisplayTextAndPinError,
       "User pressed Cancel on PIN screen."
     )
   end
 
   it "maps USER_REFUSED_INTERACTION confirmationMessage to specific exception class" do
-    refused_status = SmartId::Models::SessionStatus.from_h(
+    refused_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: {
         endResult: "USER_REFUSED_INTERACTION",
@@ -85,13 +82,13 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     )
 
     expect { validator.validate(refused_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UserRefusedConfirmationMessageError,
+      SmartIdRuby::Errors::UserRefusedConfirmationMessageError,
       "User cancelled on confirmationMessage screen"
     )
   end
 
   it "maps USER_REFUSED_INTERACTION confirmationMessageAndVerificationCodeChoice to specific exception class" do
-    refused_status = SmartId::Models::SessionStatus.from_h(
+    refused_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: {
         endResult: "USER_REFUSED_INTERACTION",
@@ -101,13 +98,13 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     )
 
     expect { validator.validate(refused_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UserRefusedConfirmationMessageWithVerificationChoiceError,
+      SmartIdRuby::Errors::UserRefusedConfirmationMessageWithVerificationChoiceError,
       "User cancelled on confirmationMessageAndVerificationCodeChoice screen"
     )
   end
 
   it "raises unprocessable error when USER_REFUSED_INTERACTION details are missing" do
-    refused_status = SmartId::Models::SessionStatus.from_h(
+    refused_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: {
         endResult: "USER_REFUSED_INTERACTION",
@@ -116,13 +113,13 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     )
 
     expect { validator.validate(refused_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       "Details for refused interaction are missing"
     )
   end
 
   it "raises unprocessable error when USER_REFUSED_INTERACTION type is unknown" do
-    refused_status = SmartId::Models::SessionStatus.from_h(
+    refused_status = SmartIdRuby::Models::SessionStatus.from_h(
       state: "COMPLETE",
       result: {
         endResult: "USER_REFUSED_INTERACTION",
@@ -132,7 +129,7 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     )
 
     expect { validator.validate(refused_status, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       "Unexpected interaction type: unknownInteraction"
     )
   end
@@ -141,7 +138,7 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     invalid = signed_status(flow_type: "QR", user_challenge: nil)
 
     expect { validator.validate(invalid, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /signature\.userChallenge/
     )
   end
@@ -150,14 +147,14 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     advanced_cert_status = signed_status(flow_type: "QR", user_challenge: default_user_challenge)
 
     expect { validator.validate(advanced_cert_status, { certificateLevel: "QUALIFIED" }, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       "Signer's certificate is below requested certificate level"
     )
   end
 
   it "requires schemaName like java validator" do
     expect { validator.validate(valid_status, authentication_session_request) }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       "Parameter 'schemaName' is not provided"
     )
   end
@@ -166,7 +163,7 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     web2app = signed_status(flow_type: "Web2App", user_challenge: default_user_challenge)
 
     expect { validator.validate(web2app, authentication_session_request, nil, schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       "Parameter 'userChallengeVerifier' must be provided for 'flowType' - Web2App"
     )
   end
@@ -177,12 +174,12 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     app2app = signed_status(flow_type: "App2App", user_challenge: user_challenge)
 
     expect { validator.validate(app2app, authentication_session_request, "wrong", schema_name, brokered_rp_name) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       "Device link authentication 'signature.userChallenge' does not validate with 'userChallengeVerifier'"
     )
 
-    response = validator.validate(app2app, authentication_session_request, verifier, schema_name, brokered_rp_name)
-    expect(response).to be_a(SmartId::Models::AuthenticationResponse)
+    identity = validator.validate(app2app, authentication_session_request, verifier, schema_name, brokered_rp_name)
+    expect(identity).to be_a(SmartIdRuby::Models::AuthenticationIdentity)
   end
 
   it "raises when signature value does not match calculated signature" do
@@ -195,7 +192,7 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     expect do
       validator.validate(invalid_signature_status, authentication_session_request, nil, schema_name, brokered_rp_name)
     end.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       "Provided signature value does not match the calculated signature value"
     )
   end
@@ -219,7 +216,7 @@ RSpec.describe SmartId::Validation::DeviceLinkAuthenticationResponseValidator do
     signature_value = signature_value_override || sign_signature_value(signature_payload)
     signature_payload[:value] = signature_value
 
-    SmartId::Models::SessionStatus.from_h(
+    SmartIdRuby::Models::SessionStatus.from_h(
       {
         state: "COMPLETE",
         result: { endResult: "OK", documentNumber: "PNOLT-40504040001-MOCK-Q" },

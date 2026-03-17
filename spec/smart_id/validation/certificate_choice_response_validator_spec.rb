@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::CertificateChoiceResponseValidator do
-  let(:certificate_validator) { instance_double(SmartId::Validation::CertificateValidator, validate: true) }
+RSpec.describe SmartIdRuby::Validation::CertificateChoiceResponseValidator do
+  let(:certificate_validator) { instance_double(SmartIdRuby::Validation::CertificateValidator, validate: true) }
   let(:validator) { described_class.new(certificate_validator: certificate_validator) }
 
   let(:certificate) do
@@ -39,7 +39,7 @@ RSpec.describe SmartId::Validation::CertificateChoiceResponseValidator do
   it "returns mapped certificate choice response on valid status" do
     response = validator.validate(valid_status, "QUALIFIED")
 
-    expect(response).to be_a(SmartId::Models::CertificateChoiceResponse)
+    expect(response).to be_a(SmartIdRuby::Models::CertificateChoiceResponse)
     expect(response.document_number).to eq("PNOEE-38001085718")
     expect(response.certificate_level).to eq("QUALIFIED")
     expect(response.device_ip_address).to eq("127.0.0.1")
@@ -49,7 +49,7 @@ RSpec.describe SmartId::Validation::CertificateChoiceResponseValidator do
     status = valid_status.merge("result" => nil)
 
     expect { validator.validate(status, "QUALIFIED") }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Certificate choice session status field 'result' is missing/
     )
   end
@@ -58,7 +58,7 @@ RSpec.describe SmartId::Validation::CertificateChoiceResponseValidator do
     status = valid_status.merge("cert" => valid_status["cert"].merge("certificateLevel" => "ADVANCED"))
 
     expect { validator.validate(status, "QUALIFIED") }.to raise_error(
-      SmartId::Errors::CertificateLevelMismatchError,
+      SmartIdRuby::Errors::CertificateLevelMismatchError,
       /certificate level is lower than requested/i
     )
   end

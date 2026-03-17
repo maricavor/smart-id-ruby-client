@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder do
   class DeviceLinkCertificateChoiceTestConnector
     attr_reader :called_request
     attr_accessor :response
@@ -69,7 +69,7 @@ RSpec.describe SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder 
     builder.with_relying_party_uuid(nil)
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'relyingPartyUUID' cannot be empty/
     )
   end
@@ -78,7 +78,7 @@ RSpec.describe SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder 
     builder.with_nonce("")
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'nonce' must have length between 1 and 30 characters/
     )
   end
@@ -87,7 +87,7 @@ RSpec.describe SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder 
     builder.with_initial_callback_url("http://example.com")
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'initialCallbackUrl' must match pattern \^https:\/\/\[\^\|\]\+\$/
     )
   end
@@ -101,7 +101,7 @@ RSpec.describe SmartId::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder 
     }
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'sessionToken' is missing or empty/
     )
   end

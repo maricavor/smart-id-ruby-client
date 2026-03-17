@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::SignatureResponseValidator do
-  let(:certificate_validator) { instance_double(SmartId::Validation::CertificateValidator, validate: true) }
+RSpec.describe SmartIdRuby::Validation::SignatureResponseValidator do
+  let(:certificate_validator) { instance_double(SmartIdRuby::Validation::CertificateValidator, validate: true) }
   let(:validator) { described_class.new(certificate_validator: certificate_validator) }
 
   let(:certificate) do
@@ -58,7 +58,7 @@ RSpec.describe SmartId::Validation::SignatureResponseValidator do
   it "returns mapped signature response on valid session status" do
     response = validator.validate(valid_status, "ADVANCED")
 
-    expect(response).to be_a(SmartId::Models::SignatureResponse)
+    expect(response).to be_a(SmartIdRuby::Models::SignatureResponse)
     expect(response.document_number).to eq("PNOEE-38001085718")
     expect(response.algorithm_name).to eq("rsassa-pss")
     expect(response.certificate_level).to eq("ADVANCED")
@@ -68,7 +68,7 @@ RSpec.describe SmartId::Validation::SignatureResponseValidator do
     status = valid_status.merge("state" => "")
 
     expect { validator.validate(status, "ADVANCED") }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Signature session status field 'state' is empty/
     )
   end
@@ -76,7 +76,7 @@ RSpec.describe SmartId::Validation::SignatureResponseValidator do
   it "raises document unusable error for DOCUMENT_UNUSABLE end result" do
     status = valid_status.merge("result" => { "endResult" => "DOCUMENT_UNUSABLE" })
 
-    expect { validator.validate(status, "ADVANCED") }.to raise_error(SmartId::Errors::DocumentUnusableError)
+    expect { validator.validate(status, "ADVANCED") }.to raise_error(SmartIdRuby::Errors::DocumentUnusableError)
   end
 
   it "raises when QUALIFIED certificate is missing QCStatements extension" do
@@ -87,7 +87,7 @@ RSpec.describe SmartId::Validation::SignatureResponseValidator do
     allow(validator).to receive(:parse_certificate).and_return(cert_without_qc_statements)
 
     expect { validator.validate(status, "QUALIFIED") }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Certificate does not have 'QCStatements' extension/
     )
   end

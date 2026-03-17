@@ -40,39 +40,44 @@ This gem follows the same high-level flow model as the Smart-ID Java client:
 Add to your app:
 
 ```bash
-bundle add smart_id
+bundle add smart_id_ruby
 ```
 
 Or install directly:
 
 ```bash
-gem install smart_id
+gem install smart_id_ruby
 ```
 
 ## Quick setup
 
 ```ruby
-require "smart_id"
+require "smart_id_ruby"
 require "base64"
 require "securerandom"
 
-client = SmartId::Client.new
-client.relying_party_uuid = ENV.fetch("SMART_ID_RP_UUID")
-client.relying_party_name = ENV.fetch("SMART_ID_RP_NAME")
-client.host_url = ENV.fetch("SMART_ID_HOST_URL") # e.g. https://sid.demo.sk.ee/smart-id-rp/v3/
+SmartIdRuby.configure do |config|
+  config.relying_party_uuid = ENV.fetch("SMART_ID_RP_UUID")
+  config.relying_party_name = ENV.fetch("SMART_ID_RP_NAME")
+  config.host_url = ENV.fetch("SMART_ID_HOST_URL") # e.g. https://sid.demo.sk.ee/smart-id-rp/v3/
+  config.default_certificate_level = "QUALIFIED" # optional app-level default
+  config.poller_timeout_seconds = 10             # optional
+end
+
+client = SmartIdRuby.client
 ```
 
 ## Logging
 
-The library uses `SmartId.logger` for connector-level logs.
+The library uses `SmartIdRuby.logger` for connector-level logs.
 Default level is `WARN`.
 
 ```ruby
 require "logger"
-require "smart_id"
+require "smart_id_ruby"
 
-SmartId.logger = Logger.new($stdout)
-SmartId.logger.level = Logger::DEBUG
+SmartIdRuby.logger = Logger.new($stdout)
+SmartIdRuby.logger.level = Logger::DEBUG
 ```
 
 At `DEBUG`, logs include method, URL, and status code.
@@ -95,9 +100,9 @@ You can pass interactions either as hashes or helper objects.
 
 ```ruby
 [
-  SmartId::NotificationInteraction.confirmationMessageAndVerificationCodeChoice("Confirm login"),
-  SmartId::NotificationInteraction.confirmationMessage("Confirm login fallback"),
-  SmartId::NotificationInteraction.displayTextAndPin("Log in fallback")
+  SmartIdRuby::NotificationInteraction.confirmationMessageAndVerificationCodeChoice("Confirm login"),
+  SmartIdRuby::NotificationInteraction.confirmationMessage("Confirm login fallback"),
+  SmartIdRuby::NotificationInteraction.displayTextAndPin("Log in fallback")
 ]
 ```
 
@@ -119,7 +124,7 @@ auth_builder = client.create_notification_authentication
   .with_certificate_level("QUALIFIED")
   .with_rp_challenge(rp_challenge)
   .with_interactions([
-    SmartId::NotificationInteraction.displayTextAndPin("Log in")
+    SmartIdRuby::NotificationInteraction.displayTextAndPin("Log in")
   ])
   .with_share_md_client_ip_address(true) # optional
 
@@ -135,7 +140,7 @@ rp_challenge = Base64.strict_encode64(SecureRandom.random_bytes(32))
 builder = client.create_device_link_authentication
   .with_rp_challenge(rp_challenge)
   .with_interactions([
-    SmartId::NotificationInteraction.confirmationMessage("Log in to MyApp")
+    SmartIdRuby::NotificationInteraction.confirmationMessage("Log in to MyApp")
   ])
   .with_initial_callback_url("https://example.com/callback") # optional
 
@@ -155,7 +160,7 @@ sig_builder = client.create_notification_signature
   .with_certificate_level("QUALIFIED")
   .with_signable_data("data to sign")
   .with_interactions([
-    SmartId::NotificationInteraction.displayTextAndPin("Please sign")
+    SmartIdRuby::NotificationInteraction.displayTextAndPin("Please sign")
   ])
   .with_nonce(SecureRandom.hex(8)) # optional
 
@@ -173,7 +178,7 @@ sig_builder = client.create_device_link_signature
   .with_certificate_level("QUALIFIED")
   .with_signable_data("data to sign")
   .with_interactions([
-    SmartId::NotificationInteraction.confirmationMessage("Please sign document")
+    SmartIdRuby::NotificationInteraction.confirmationMessage("Please sign document")
   ])
   .with_initial_callback_url("https://example.com/callback") # optional
 
@@ -204,7 +209,7 @@ cert_choice_session_id = cert_choice_init["sessionID"] || cert_choice_init[:sess
 
 cert_choice_status = client.session_status_poller.fetch_final_session_status(cert_choice_session_id)
 
-cert_choice_response = SmartId::Validation::CertificateChoiceResponseValidator.new
+cert_choice_response = SmartIdRuby::Validation::CertificateChoiceResponseValidator.new
   .validate(cert_choice_status, "QUALIFIED")
 
 linked_sig_init = client.create_linked_notification_signature
@@ -212,7 +217,7 @@ linked_sig_init = client.create_linked_notification_signature
   .with_linked_session_id(cert_choice_session_id)
   .with_signable_data("data to sign")
   .with_interactions([
-    SmartId::NotificationInteraction.displayTextAndPin("Please sign")
+    SmartIdRuby::NotificationInteraction.displayTextAndPin("Please sign")
   ])
   .init_signature_session
 ```
@@ -238,7 +243,7 @@ you can create a signed device-link URI and QR image.
 # Example: after device-link authentication init
 auth_builder = client.create_device_link_authentication
   .with_rp_challenge(Base64.strict_encode64(SecureRandom.random_bytes(32)))
-  .with_interactions([SmartId::NotificationInteraction.displayTextAndPin("Log in")])
+  .with_interactions([SmartIdRuby::NotificationInteraction.displayTextAndPin("Log in")])
   .with_document_number("PNOLT-40504040001-MOCK-Q")
 
 init = auth_builder.init_authentication_session
@@ -256,8 +261,8 @@ Build unprotected and protected device-link:
 ```ruby
 dynamic = client.create_dynamic_content
   .with_device_link_base(device_link_base)
-  .with_session_type(SmartId::SessionType::AUTHENTICATION)
-  .with_device_link_type(SmartId::DeviceLinkType::QR_CODE)
+  .with_session_type(SmartIdRuby::SessionType::AUTHENTICATION)
+  .with_device_link_type(SmartIdRuby::DeviceLinkType::QR_CODE)
   .with_session_token(session_token)
   .with_elapsed_seconds(1)
   .with_lang("eng")
@@ -271,11 +276,11 @@ device_link_uri = dynamic.build_device_link(session_secret)
 Generate QR-code (PNG Data URI by default):
 
 ```ruby
-qr_data_uri = SmartId::QrCodeGenerator.generate_data_uri(device_link_uri.to_s)
+qr_data_uri = SmartIdRuby::QrCodeGenerator.generate_data_uri(device_link_uri.to_s)
 
 # or create image object and convert manually
-image = SmartId::QrCodeGenerator.generate_image(device_link_uri.to_s, 610, 610, 4)
-qr_data_uri = SmartId::QrCodeGenerator.convert_to_data_uri(image, "png")
+image = SmartIdRuby::QrCodeGenerator.generate_image(device_link_uri.to_s, 610, 610, 4)
+qr_data_uri = SmartIdRuby::QrCodeGenerator.convert_to_data_uri(image, "png")
 ```
 
 `DeviceLinkBuilder` also provides Java-style aliases:
@@ -313,7 +318,7 @@ For final session status payloads, use validators:
 ### Notification authentication response validator
 
 ```ruby
-identity = SmartId::Validation::NotificationAuthenticationResponseValidator.new
+identity = SmartIdRuby::Validation::NotificationAuthenticationResponseValidator.new
   .validate(
     final_status,
     auth_builder.get_authentication_session_request,
@@ -325,7 +330,7 @@ identity = SmartId::Validation::NotificationAuthenticationResponseValidator.new
 ### Device-link authentication response validator
 
 ```ruby
-response = SmartId::Validation::DeviceLinkAuthenticationResponseValidator.new.validate(
+response = SmartIdRuby::Validation::DeviceLinkAuthenticationResponseValidator.new.validate(
   final_status,
   auth_builder.get_authentication_session_request,
   nil,        # user_challenge_verifier (required for Web2App/App2App)
@@ -337,14 +342,14 @@ response = SmartId::Validation::DeviceLinkAuthenticationResponseValidator.new.va
 ### Signature response validator
 
 ```ruby
-signature = SmartId::Validation::SignatureResponseValidator.new
+signature = SmartIdRuby::Validation::SignatureResponseValidator.new
   .validate(final_status, "QUALIFIED")
 ```
 
 ### Certificate choice response validator
 
 ```ruby
-choice = SmartId::Validation::CertificateChoiceResponseValidator.new
+choice = SmartIdRuby::Validation::CertificateChoiceResponseValidator.new
   .validate(final_status, "QUALIFIED")
 ```
 
@@ -396,26 +401,26 @@ client.trust_ssl_context = ssl_context
 
 Main exception classes:
 
-- `SmartId::Errors::RequestSetupError`
-- `SmartId::Errors::RequestValidationError`
-- `SmartId::Errors::UnprocessableResponseError`
-- `SmartId::Errors::SessionEndResultError`
-- `SmartId::Errors::SessionNotCompleteError`
-- `SmartId::Errors::CertificateLevelMismatchError`
-- `SmartId::Errors::DocumentUnusableError`
-- `SmartId::Errors::UserRefusedDisplayTextAndPinError`
-- `SmartId::Errors::UserRefusedConfirmationMessageError`
-- `SmartId::Errors::UserRefusedConfirmationMessageWithVerificationChoiceError`
+- `SmartIdRuby::Errors::RequestSetupError`
+- `SmartIdRuby::Errors::RequestValidationError`
+- `SmartIdRuby::Errors::UnprocessableResponseError`
+- `SmartIdRuby::Errors::SessionEndResultError`
+- `SmartIdRuby::Errors::SessionNotCompleteError`
+- `SmartIdRuby::Errors::CertificateLevelMismatchError`
+- `SmartIdRuby::Errors::DocumentUnusableError`
+- `SmartIdRuby::Errors::UserRefusedDisplayTextAndPinError`
+- `SmartIdRuby::Errors::UserRefusedConfirmationMessageError`
+- `SmartIdRuby::Errors::UserRefusedConfirmationMessageWithVerificationChoiceError`
 
 Connector/network-related classes:
 
-- `SmartId::Errors::SessionNotFoundError`
-- `SmartId::Errors::UserAccountNotFoundError`
-- `SmartId::Errors::RelyingPartyAccountConfigurationError`
-- `SmartId::Errors::NoSuitableAccountOfRequestedTypeFoundError`
-- `SmartId::Errors::PersonShouldViewSmartIdPortalError`
-- `SmartId::Errors::UnsupportedClientApiVersionError`
-- `SmartId::Errors::ServerMaintenanceError`
+- `SmartIdRuby::Errors::SessionNotFoundError`
+- `SmartIdRuby::Errors::UserAccountNotFoundError`
+- `SmartIdRuby::Errors::RelyingPartyAccountConfigurationError`
+- `SmartIdRuby::Errors::NoSuitableAccountOfRequestedTypeFoundError`
+- `SmartIdRuby::Errors::PersonShouldViewSmartIdPortalError`
+- `SmartIdRuby::Errors::UnsupportedClientApiVersionError`
+- `SmartIdRuby::Errors::ServerMaintenanceError`
 
 ## Development
 

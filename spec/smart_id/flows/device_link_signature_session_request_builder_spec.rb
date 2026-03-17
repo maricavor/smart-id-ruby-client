@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::DeviceLinkSignatureSessionRequestBuilder do
   DeviceLinkSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
 
   class DeviceLinkSignatureTestConnector
@@ -65,14 +65,14 @@ RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-31111111111")
     builder.init_signature_session
 
-    request = builder.get_signature_session_request
+    request = builder.signature_session_request
     expect(request[:relyingPartyUUID]).to eq("test-relying-party-uuid")
     expect(request[:relyingPartyName]).to eq("DEMO")
   end
 
   it "raises when reading signature request before initialization" do
-    expect { builder.get_signature_session_request }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+    expect { builder.signature_session_request }.to raise_error(
+      SmartIdRuby::Errors::RequestSetupError,
       /Signature session has not been initiated yet/
     )
   end
@@ -95,14 +95,14 @@ RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
     builder.with_document_number("PNOEE-31111111111-MOCK-Q")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Only one of 'semanticsIdentifier' or 'documentNumber'/
     )
   end
 
   it "raises when both semantics identifier and document number are missing" do
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Either 'documentNumber' or 'semanticsIdentifier' must be set. Anonymous signing is not allowed/
     )
   end
@@ -112,7 +112,7 @@ RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
     builder.with_initial_callback_url("http://example.com")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /must match pattern \^https:\/\/\[\^\|\]\+\$/
     )
   end
@@ -122,7 +122,7 @@ RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
     builder.with_nonce("")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'nonce' length must be between 1 and 30 characters\./
     )
   end
@@ -137,7 +137,7 @@ RSpec.describe SmartId::Flows::DeviceLinkSignatureSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-31111111111")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'sessionToken' is missing or empty/
     )
   end

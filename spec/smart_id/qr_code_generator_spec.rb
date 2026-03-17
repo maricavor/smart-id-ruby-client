@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::QrCodeGenerator do
+RSpec.describe SmartIdRuby::QrCodeGenerator do
   let(:uri) { "https://smart-id.com/device-link/?sessionToken=token123" }
 
   describe ".generate_data_uri" do
@@ -29,7 +29,7 @@ RSpec.describe SmartId::QrCodeGenerator do
 
     it "raises when data is empty" do
       expect { described_class.generate_image(nil) }.to raise_error(
-        SmartId::Errors::RequestSetupError,
+        SmartIdRuby::Errors::RequestSetupError,
         /Provided data cannot be empty/
       )
     end

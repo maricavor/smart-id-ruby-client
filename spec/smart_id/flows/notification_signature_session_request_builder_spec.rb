@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   NotificationSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
   NotificationSignableHashInput = Struct.new(:hash_to_sign, :hash_algorithm)
 
@@ -110,14 +110,14 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-30303039914")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Only one of 'semanticsIdentifier' or 'documentNumber'/
     )
   end
 
   it "raises when no document number or semantics identifier is set" do
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Either 'documentNumber' or 'semanticsIdentifier' must be set/
     )
   end
@@ -127,7 +127,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     builder.with_nonce("")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'nonce' length must be between 1 and 30 characters/
     )
   end
@@ -138,7 +138,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     expect do
       builder.with_signable_hash("hash")
     end.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'digestInput' has already been set with SignableData/
     )
   end
@@ -149,7 +149,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-30303039914")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'digestInput' must be set with either SignableData or SignableHash/
     )
   end
@@ -159,7 +159,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-30303039914")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'signatureAlgorithm' must be set/
     )
   end
@@ -176,7 +176,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
       .with_semantics_identifier("PNOEE-30303039914")
 
     expect { local_builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'vc' is missing/
     )
   end
@@ -193,7 +193,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
       .with_semantics_identifier("PNOEE-30303039914")
 
     expect { local_builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'vc.type' is missing or empty/
     )
   end
@@ -210,7 +210,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
       .with_semantics_identifier("PNOEE-30303039914")
 
     expect { local_builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'vc.value' is missing or empty/
     )
   end
@@ -227,7 +227,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
       .with_semantics_identifier("PNOEE-30303039914")
 
     expect { local_builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /response field 'vc.value' does not match the required pattern/
     )
   end
@@ -244,7 +244,7 @@ RSpec.describe SmartId::Flows::NotificationSignatureSessionRequestBuilder do
       .with_semantics_identifier("PNOEE-30303039914")
 
     expect { local_builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /vc.type' contains unsupported value/
     )
   end

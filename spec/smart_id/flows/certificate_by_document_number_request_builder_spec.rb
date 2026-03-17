@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::CertificateByDocumentNumberRequestBuilder do
   class CertificateByDocumentNumberTestConnector
     attr_reader :called_document_number, :called_request
     attr_accessor :response
@@ -67,7 +67,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
     builder.with_document_number(nil)
 
     expect { builder.get_certificate_by_document_number }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'documentNumber' cannot be empty/
     )
   end
@@ -75,7 +75,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
   it "raises when response state is DOCUMENT_UNUSABLE" do
     connector.response = { "state" => "DOCUMENT_UNUSABLE", "cert" => nil }
 
-    expect { builder.get_certificate_by_document_number }.to raise_error(SmartId::Errors::DocumentUnusableError)
+    expect { builder.get_certificate_by_document_number }.to raise_error(SmartIdRuby::Errors::DocumentUnusableError)
   end
 
   it "raises when response certificate level is unsupported" do
@@ -85,7 +85,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
     }
 
     expect { builder.get_certificate_by_document_number }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /cert.certificateLevel' has unsupported value/
     )
   end
@@ -98,7 +98,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
     }
 
     expect { builder.get_certificate_by_document_number }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Queried certificate has lower level than requested/
     )
   end
@@ -110,7 +110,7 @@ RSpec.describe SmartId::Flows::CertificateByDocumentNumberRequestBuilder do
     }
 
     expect { builder.get_certificate_by_document_number }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /cert.value' does not have Base64-encoded value/
     )
   end

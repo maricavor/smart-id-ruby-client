@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::NotificationCertificateChoiceSessionRequestBuilder do
   class NotificationCertificateChoiceTestConnector
     attr_reader :called_request, :called_semantics_identifier
     attr_accessor :response
@@ -60,7 +60,7 @@ RSpec.describe SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilde
     builder.with_semantics_identifier(nil)
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'semanticIdentifier' must be set/
     )
   end
@@ -69,7 +69,7 @@ RSpec.describe SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilde
     builder.with_relying_party_uuid(nil)
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'relyingPartyUUID' cannot be empty/
     )
   end
@@ -78,7 +78,7 @@ RSpec.describe SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilde
     builder.with_nonce("")
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'nonce' length must be between 1 and 30 characters/
     )
   end
@@ -87,7 +87,7 @@ RSpec.describe SmartId::Flows::NotificationCertificateChoiceSessionRequestBuilde
     connector.response = { "sessionID" => "" }
 
     expect { builder.init_certificate_choice }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Notification-based certificate choice response field 'sessionID' is missing or empty/
     )
   end

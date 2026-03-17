@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::LinkedNotificationSignatureSessionRequestBuilder do
   LinkedSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
   LinkedSignableHashInput = Struct.new(:hash_to_sign, :hash_algorithm)
 
@@ -70,7 +70,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
     builder.with_signable_hash(nil)
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'digestInput' must be set with SignableData or with SignableHash/
     )
   end
@@ -80,7 +80,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
       builder.with_signable_data(LinkedSignableDataInput.new("Test data", "SHA-512"))
              .with_signable_hash("hash")
     end.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'digestInput' has been already set with SignableData/
     )
   end
@@ -89,7 +89,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
     builder.with_linked_session_id(nil)
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'linkedSessionID' cannot be empty/
     )
   end
@@ -98,7 +98,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
     builder.with_nonce("")
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'nonce' must be 1-30 characters long/
     )
   end
@@ -107,7 +107,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
     builder.with_interactions([{ type: "displayTextAndPIN" }, { type: "displayTextAndPIN" }])
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Value for 'interactions' cannot contain duplicate types/
     )
   end
@@ -116,7 +116,7 @@ RSpec.describe SmartId::Flows::LinkedNotificationSignatureSessionRequestBuilder 
     connector.response = { "sessionID" => "" }
 
     expect { builder.init_signature_session }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Linked notification-base signature session response field 'sessionID' is missing or empty/
     )
   end

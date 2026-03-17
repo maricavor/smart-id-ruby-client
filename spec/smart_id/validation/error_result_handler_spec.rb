@@ -1,42 +1,42 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::ErrorResultHandler do
+RSpec.describe SmartIdRuby::Validation::ErrorResultHandler do
   describe ".handle" do
     it "raises document unusable error for DOCUMENT_UNUSABLE" do
-      result = SmartId::Models::SessionResult.new(end_result: "DOCUMENT_UNUSABLE")
+      result = SmartIdRuby::Models::SessionResult.new(end_result: "DOCUMENT_UNUSABLE")
 
-      expect { described_class.handle(result) }.to raise_error(SmartId::Errors::DocumentUnusableError)
+      expect { described_class.handle(result) }.to raise_error(SmartIdRuby::Errors::DocumentUnusableError)
     end
 
     it "raises mapped user-refused interaction errors" do
-      result = SmartId::Models::SessionResult.new(
+      result = SmartIdRuby::Models::SessionResult.new(
         end_result: "USER_REFUSED_INTERACTION",
-        details: SmartId::Models::SessionResultDetails.new(interaction: "displayTextAndPIN")
+        details: SmartIdRuby::Models::SessionResultDetails.new(interaction: "displayTextAndPIN")
       )
 
-      expect { described_class.handle(result) }.to raise_error(SmartId::Errors::UserRefusedDisplayTextAndPinError)
+      expect { described_class.handle(result) }.to raise_error(SmartIdRuby::Errors::UserRefusedDisplayTextAndPinError)
     end
 
     it "raises unprocessable error when refused interaction details are missing" do
-      result = SmartId::Models::SessionResult.new(end_result: "USER_REFUSED_INTERACTION", details: nil)
+      result = SmartIdRuby::Models::SessionResult.new(end_result: "USER_REFUSED_INTERACTION", details: nil)
 
       expect { described_class.handle(result) }.to raise_error(
-        SmartId::Errors::UnprocessableResponseError,
+        SmartIdRuby::Errors::UnprocessableResponseError,
         /Details for refused interaction are missing/
       )
     end
 
-    it "raises session end result error for known non-special errors" do
-      result = SmartId::Models::SessionResult.new(end_result: "TIMEOUT")
+    it "raises dedicated error for known non-special end results" do
+      result = SmartIdRuby::Models::SessionResult.new(end_result: "TIMEOUT")
 
-      expect { described_class.handle(result) }.to raise_error(SmartId::Errors::SessionEndResultError)
+      expect { described_class.handle(result) }.to raise_error(SmartIdRuby::Errors::SessionTimeoutError)
     end
 
-    it "raises session end result error for unexpected errors with fallback message" do
-      result = SmartId::Models::SessionResult.new(end_result: "UNKNOWN_ERROR")
+    it "raises unprocessable error for unexpected end results" do
+      result = SmartIdRuby::Models::SessionResult.new(end_result: "UNKNOWN_ERROR")
 
       expect { described_class.handle(result) }.to raise_error(
-        SmartId::Errors::SessionEndResultError,
+        SmartIdRuby::Errors::UnprocessableResponseError,
         /Unexpected session result: UNKNOWN_ERROR/
       )
     end

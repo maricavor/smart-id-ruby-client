@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::NotificationAuthenticationSessionRequestBuilder do
   class NotificationAuthenticationTestConnector
     attr_reader :called_method, :called_request, :called_argument
 
@@ -40,7 +40,7 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]).to eq("SHA3-512")
     expect(connector.called_request[:interactions]).to be_a(String)
     expect(connector.called_request[:vcType]).to eq("numeric4")
-    expect(builder.get_authentication_session_request).to eq(connector.called_request)
+    expect(builder.authentication_session_request).to eq(connector.called_request)
   end
 
   it "routes to semantics-identifier connector method when provided" do
@@ -53,7 +53,7 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
 
   it "accepts NotificationInteraction objects in interactions list" do
     builder.with_document_number("PNOLT-40504040001-MOCK-Q")
-    builder.with_interactions([SmartId::NotificationInteraction.display_text_and_pin("Log in")])
+    builder.with_interactions([SmartIdRuby::NotificationInteraction.display_text_and_pin("Log in")])
     builder.init_authentication_session
 
     decoded_interactions = JSON.parse(Base64.decode64(connector.called_request[:interactions]))
@@ -65,14 +65,14 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
     builder.with_semantics_identifier("PNOEE-30303039914")
 
     expect { builder.init_authentication_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Only one of 'semanticsIdentifier' or 'documentNumber'/
     )
   end
 
   it "raises when no document number or semantics identifier is set" do
     expect { builder.init_authentication_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Either 'documentNumber' or 'semanticsIdentifier' must be set/
     )
   end
@@ -82,7 +82,7 @@ RSpec.describe SmartId::Flows::NotificationAuthenticationSessionRequestBuilder d
     builder.with_rp_challenge("invalid")
 
     expect { builder.init_authentication_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /must be Base64-encoded/
     )
   end

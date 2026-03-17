@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    smart_id (0.1.0)
+    smart-id (0.1.0)
       base64
       faraday (~> 2.0)
       rqrcode (~> 3.0)
@@ -79,7 +79,7 @@ DEPENDENCIES
   rake (~> 13.0)
   rspec (~> 3.0)
   rubocop (~> 1.21)
-  smart_id!
+  smart-id!
 
 BUNDLED WITH
    2.5.22

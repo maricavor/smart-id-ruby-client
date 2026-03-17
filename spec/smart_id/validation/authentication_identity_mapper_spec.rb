@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::AuthenticationIdentityMapper do
+RSpec.describe SmartIdRuby::Validation::AuthenticationIdentityMapper do
   let(:mapper) { described_class.new }
 
   def build_certificate(subject_name)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Validation::CertificateValidator do
+RSpec.describe SmartIdRuby::Validation::CertificateValidator do
   def build_ca_certificate(common_name)
     key = OpenSSL::PKey::RSA.new(2048)
     cert = OpenSSL::X509::Certificate.new
@@ -46,7 +46,7 @@ RSpec.describe SmartId::Validation::CertificateValidator do
     root_cert, root_key = build_ca_certificate("Test Root CA")
     leaf_cert = build_leaf_certificate("Leaf", root_cert, root_key)
 
-    store = SmartId::Validation::TrustedCaCertStore.new(
+    store = SmartIdRuby::Validation::TrustedCaCertStore.new(
       trust_anchors: [root_cert],
       trusted_ca_certificates: [root_cert],
       ocsp_enabled: false
@@ -62,7 +62,7 @@ RSpec.describe SmartId::Validation::CertificateValidator do
     validator = described_class.new(use_system_store: false)
 
     expect { validator.validate(leaf_cert) }.to raise_error(
-      SmartId::Errors::UnprocessableResponseError,
+      SmartIdRuby::Errors::UnprocessableResponseError,
       /Certificate chain validation failed/
     )
   end

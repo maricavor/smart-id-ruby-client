@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
+RSpec.describe SmartIdRuby::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
   class DeviceLinkAuthenticationTestConnector
     attr_reader :called_method, :called_request, :called_argument
 
@@ -44,7 +44,7 @@ RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithm]).to eq("rsassa-pss")
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]).to eq("SHA3-512")
     expect(connector.called_request[:interactions]).to be_a(String)
-    expect(builder.get_authentication_session_request).to eq(connector.called_request)
+    expect(builder.authentication_session_request).to eq(connector.called_request)
   end
 
   it "routes to document-number connector method when document number is provided" do
@@ -56,7 +56,7 @@ RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
   end
 
   it "accepts NotificationInteraction objects in interactions list" do
-    builder.with_interactions([SmartId::NotificationInteraction.display_text_and_pin("Log in")])
+    builder.with_interactions([SmartIdRuby::NotificationInteraction.display_text_and_pin("Log in")])
     builder.init_authentication_session
 
     decoded_interactions = JSON.parse(Base64.decode64(connector.called_request[:interactions]))
@@ -68,7 +68,7 @@ RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
     builder.with_semantics_identifier("PNOEE-30303039914")
 
     expect { builder.init_authentication_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /Only one of 'semanticsIdentifier' or 'documentNumber'/
     )
   end
@@ -77,7 +77,7 @@ RSpec.describe SmartId::Flows::DeviceLinkAuthenticationSessionRequestBuilder do
     builder.with_rp_challenge("invalid")
 
     expect { builder.init_authentication_session }.to raise_error(
-      SmartId::Errors::RequestSetupError,
+      SmartIdRuby::Errors::RequestSetupError,
       /must be Base64-encoded/
     )
   end
