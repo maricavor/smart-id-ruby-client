@@ -4,7 +4,7 @@
 
 # smart-id
 
-Ruby client gem for integrating Smart-ID RP API v3.1 into Ruby applications.
+Ruby client gem for integrating [Smart-ID RP API v3.1](https://sk-eid.github.io/smart-id-documentation/index.html) into Ruby applications.
 
 This gem follows the same high-level flow model as the Smart-ID Java client:
 
