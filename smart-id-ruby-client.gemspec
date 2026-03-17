@@ -3,13 +3,13 @@
 require_relative "lib/smart_id_ruby/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "smart-id"
+  spec.name = "smart-id-ruby-client"
   spec.version = SmartIdRuby::VERSION
   spec.authors = ["Sergei Tsõganov"]
   spec.email = ["sergei.tsoganov@internet.ee"]
 
   spec.summary = "Smart-ID wrapper library for using Smart-ID in Ruby applications"
-  spec.homepage = "https://github.com/maricavor/smart-id"
+  spec.homepage = "https://github.com/maricavor/smart-id-ruby-client"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
