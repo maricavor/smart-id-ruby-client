@@ -1,8 +1,8 @@
-[![Tests](https://github.com/maricavor/smart-id/actions/workflows/main.yml/badge.svg)](https://github.com/maricavor/smart-id/actions/workflows/main.yml)
-[![codecov](https://codecov.io/github/maricavor/smart-id/graph/badge.svg?token=WNE2Q8YLM5)](https://codecov.io/github/maricavor/smart-id)
+[![Tests](https://github.com/maricavor/smart-id-ruby-client/actions/workflows/main.yml/badge.svg)](https://github.com/maricavor/smart-id-ruby-client/actions/workflows/main.yml)
+[![codecov](https://codecov.io/github/maricavor/smart-id-ruby-client/graph/badge.svg?token=WNE2Q8YLM5)](https://codecov.io/github/maricavor/smart-id-ruby-client)
 [![License: MIT](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-# smart-id
+# smart-id-ruby-client
 
 Ruby client gem for integrating [Smart-ID RP API v3.1](https://sk-eid.github.io/smart-id-documentation/index.html) into Ruby applications.
 
@@ -44,19 +44,19 @@ This gem follows the same high-level flow model as the Smart-ID Java client:
 Add to your app:
 
 ```bash
-bundle add smart-id
+bundle add smart-id-ruby-client
 ```
 
 Or install directly:
 
 ```bash
-gem install smart-id
+gem install smart-id-ruby-client
 ```
 
 ## Quick setup
 
 ```ruby
-require "smart_id_ruby"
+require "smart-id-ruby-client" # or: require "smart_id_ruby"
 require "base64"
 require "securerandom"
 
@@ -78,7 +78,7 @@ Default level is `WARN`.
 
 ```ruby
 require "logger"
-require "smart_id_ruby"
+require "smart-id-ruby-client" # or: require "smart_id_ruby"
 
 SmartIdRuby.logger = Logger.new($stdout)
 SmartIdRuby.logger.level = Logger::DEBUG
