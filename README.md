@@ -1,3 +1,6 @@
+[![Tests](https://github.com/maricavor/smart-id/actions/workflows/main.yml/badge.svg)](https://github.com/maricavor/smart-id/actions/workflows/main.yml)
+[![License: MIT](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+
 # smart-id
 
 Ruby client gem for integrating Smart-ID RP API v3.1 into Ruby applications.
