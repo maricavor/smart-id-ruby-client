@@ -1,4 +1,5 @@
 [![Tests](https://github.com/maricavor/smart-id/actions/workflows/main.yml/badge.svg)](https://github.com/maricavor/smart-id/actions/workflows/main.yml)
+[![codecov](https://codecov.io/github/maricavor/smart-id/graph/badge.svg?token=WNE2Q8YLM5)](https://codecov.io/github/maricavor/smart-id)
 [![License: MIT](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 # smart-id
