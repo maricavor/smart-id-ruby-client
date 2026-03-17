@@ -152,7 +152,7 @@ RSpec.describe SmartIdRuby::Validation::DeviceLinkAuthenticationResponseValidato
     )
   end
 
-  it "requires schemaName like java validator" do
+  it "requires schemaName" do
     expect { validator.validate(valid_status, authentication_session_request) }.to raise_error(
       SmartIdRuby::Errors::RequestSetupError,
       "Parameter 'schemaName' is not provided"

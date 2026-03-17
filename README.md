@@ -1,4 +1,4 @@
-# smart_id
+# smart-id
 
 Ruby client gem for integrating Smart-ID RP API v3.1 into Ruby applications.
 
@@ -40,13 +40,13 @@ This gem follows the same high-level flow model as the Smart-ID Java client:
 Add to your app:
 
 ```bash
-bundle add smart_id_ruby
+bundle add smart-id
 ```
 
 Or install directly:
 
 ```bash
-gem install smart_id_ruby
+gem install smart-id
 ```
 
 ## Quick setup
@@ -282,10 +282,6 @@ qr_data_uri = SmartIdRuby::QrCodeGenerator.generate_data_uri(device_link_uri.to_
 image = SmartIdRuby::QrCodeGenerator.generate_image(device_link_uri.to_s, 610, 610, 4)
 qr_data_uri = SmartIdRuby::QrCodeGenerator.convert_to_data_uri(image, "png")
 ```
-
-`DeviceLinkBuilder` also provides Java-style aliases:
-`withDeviceLinkBase`, `withSessionType`, `withDeviceLinkType`,
-`withSessionToken`, `createUnprotectedUri`, `buildDeviceLink`.
 
 ## Session status polling
 
