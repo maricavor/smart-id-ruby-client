@@ -2,7 +2,9 @@
 
 module SmartIdRuby
   module Errors
-    # Represents request setup error condition.
+    # Exception thrown when there is an issue setting up a Smart-ID request.
+    # This could be due to invalid parameters, configuration issues, or other
+    # problems that prevent from successfully preparing the request.
     class RequestSetupError < Error; end
   end
 end

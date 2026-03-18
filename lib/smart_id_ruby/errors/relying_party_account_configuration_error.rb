@@ -2,7 +2,9 @@
 
 module SmartIdRuby
   module Errors
-    # Represents relying party account configuration error condition.
+    # Exception will be thrown when there are problems with relying party account and access configuration
+    # or when relying party does not have access to the requested service.
+    # F.e. Request is made with relying party UUID and incorrect relying party name.
     class RelyingPartyAccountConfigurationError < Error; end
   end
 end

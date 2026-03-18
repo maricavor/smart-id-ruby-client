@@ -2,7 +2,8 @@
 
 module SmartIdRuby
   module Errors
-    # Represents user refused confirmation message error condition.
+    # Thrown when session status end result is USER_REFUSED_INTERACTION.
+    # This happens when user presses Cancel on confirmation message screen.
     class UserRefusedConfirmationMessageError < SessionEndResultError
       def initialize
         super("USER_REFUSED_INTERACTION", "User cancelled on confirmationMessage screen")

@@ -2,7 +2,7 @@
 
 module SmartIdRuby
   module Errors
-    # Represents user account not found error condition.
+    # Thrown when user account does not exist with the given identifier or document number.
     class UserAccountNotFoundError < Error; end
   end
 end

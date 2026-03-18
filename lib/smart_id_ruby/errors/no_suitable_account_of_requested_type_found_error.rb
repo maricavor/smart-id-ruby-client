@@ -2,7 +2,9 @@
 
 module SmartIdRuby
   module Errors
-    # Represents no suitable account of requested type found error condition.
+    # Thrown when user does not have a suitable account for the requested operation.
+    # F.e. user has non-qualified account with ADVANCED certificate level,
+    # but QUALIFIED certificate level is required for the operation.
     class NoSuitableAccountOfRequestedTypeFoundError < Error; end
   end
 end

@@ -2,7 +2,7 @@
 
 module SmartIdRuby
   module Errors
-    # Represents certificate level mismatch error condition.
+    # Thrown when returned certificate level is lower than the requested certificate level.
     class CertificateLevelMismatchError < Error; end
   end
 end

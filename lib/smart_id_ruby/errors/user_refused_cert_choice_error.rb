@@ -2,6 +2,8 @@
 
 module SmartIdRuby
   module Errors
+    # Thrown when session status end result is USER_REFUSED_CERT_CHOICE.
+    # This happens when user has multiple accounts and presses Cancel on device choice screen on any device.
     class UserRefusedCertChoiceError < SessionEndResultError
       def initialize
         super("USER_REFUSED_CERT_CHOICE",

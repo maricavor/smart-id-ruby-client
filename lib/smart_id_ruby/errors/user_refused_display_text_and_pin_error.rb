@@ -2,7 +2,8 @@
 
 module SmartIdRuby
   module Errors
-    # Represents user refused display text and pin error condition.
+    # Thrown when session status end result is USER_REFUSED_INTERACTION.
+    # This happens when user presses Cancel on display text and PIN screen.
     class UserRefusedDisplayTextAndPinError < SessionEndResultError
       def initialize
         super("USER_REFUSED_INTERACTION", "User pressed Cancel on PIN screen.")

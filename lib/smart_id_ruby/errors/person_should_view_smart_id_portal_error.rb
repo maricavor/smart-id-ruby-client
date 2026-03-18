@@ -2,7 +2,7 @@
 
 module SmartIdRuby
   module Errors
-    # Represents person should view smart id portal error condition.
+    # Thrown when Smart-ID API indicates that there is an issue with user document and user should check its state.
     class PersonShouldViewSmartIdPortalError < Error; end
   end
 end
