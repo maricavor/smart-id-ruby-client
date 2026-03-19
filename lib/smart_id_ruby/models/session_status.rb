@@ -47,12 +47,12 @@ module SmartIdRuby
         {
           state: state,
           result: result.to_h,
-          signature_protocol: signature_protocol,
+          signatureProtocol: signature_protocol,
           signature: signature.to_h,
           cert: cert.to_h,
-          ignored_properties: ignored_properties,
-          interaction_type_used: interaction_type_used,
-          device_ip_address: device_ip_address
+          ignoredProperties: ignored_properties,
+          interactionTypeUsed: interaction_type_used,
+          deviceIpAddress: device_ip_address
         }
       end
 
@@ -89,8 +89,8 @@ module SmartIdRuby
 
       def to_h
         {
-          end_result: end_result,
-          document_number: document_number,
+          endResult: end_result,
+          documentNumber: document_number,
           details: details.to_h
         }
       end
@@ -161,11 +161,11 @@ module SmartIdRuby
       def to_h
         {
           value: value,
-          server_random: server_random,
-          user_challenge: user_challenge,
-          flow_type: flow_type,
-          signature_algorithm: signature_algorithm,
-          signature_algorithm_parameters: signature_algorithm_parameters.to_h
+          serverRandom: server_random,
+          userChallenge: user_challenge,
+          flowType: flow_type,
+          signatureAlgorithm: signature_algorithm,
+          signatureAlgorithmParameters: signature_algorithm_parameters.to_h
         }
       end
 
@@ -203,10 +203,10 @@ module SmartIdRuby
 
       def to_h
         {
-          hash_algorithm: hash_algorithm,
-          mask_gen_algorithm: mask_gen_algorithm,
-          salt_length: salt_length,
-          trailer_field: trailer_field
+          hashAlgorithm: hash_algorithm,
+          maskGenAlgorithm: mask_gen_algorithm,
+          saltLength: salt_length,
+          trailerField: trailer_field
         }
       end
 
@@ -239,7 +239,7 @@ module SmartIdRuby
       def to_h
         {
           value: value,
-          certificate_level: certificate_level
+          certificateLevel: certificate_level
         }
       end
 
