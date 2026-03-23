@@ -174,6 +174,7 @@ module SmartIdRuby
         @connection ||= configured_connection ||
                         Faraday.new(url: host_url, ssl: ssl_options) do |faraday|
                           apply_connection_config(faraday)
+                          faraday.response :raise_error
                           faraday.adapter Faraday.default_adapter
                         end
       end
