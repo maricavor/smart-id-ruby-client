@@ -46,7 +46,7 @@ module SmartIdRuby
         request = create_certificate_request
         response = connector.init_device_link_certificate_choice(request)
         validate_response_parameters(response)
-        response
+        SmartIdRuby::Models::DeviceLinkSessionResponse.from_h(response)
       end
 
       private

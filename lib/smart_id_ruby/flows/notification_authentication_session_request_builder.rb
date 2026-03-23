@@ -75,7 +75,7 @@ module SmartIdRuby
         response = init_session(request)
         validate_response_parameters(response)
         @notification_authentication_session_request = request
-        response
+        SmartIdRuby::Models::NotificationAuthenticationSessionResponse.from_h(response)
       end
 
       def authentication_session_request

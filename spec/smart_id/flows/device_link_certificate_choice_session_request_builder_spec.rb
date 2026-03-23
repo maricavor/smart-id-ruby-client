@@ -1,26 +1,28 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartIdRuby::Flows::DeviceLinkCertificateChoiceSessionRequestBuilder do
-  class DeviceLinkCertificateChoiceTestConnector
-    attr_reader :called_request
-    attr_accessor :response
+  let(:connector_class) do
+    Class.new do
+      attr_reader :called_request
+      attr_accessor :response
 
-    def initialize
-      @response = {
-        "sessionID" => "test-session-id",
-        "sessionToken" => "test-session-token",
-        "sessionSecret" => "test-session-secret",
-        "deviceLinkBase" => "https://example.com/device-link"
-      }
-    end
+      def initialize
+        @response = {
+          "sessionID" => "test-session-id",
+          "sessionToken" => "test-session-token",
+          "sessionSecret" => "test-session-secret",
+          "deviceLinkBase" => "https://example.com/device-link"
+        }
+      end
 
-    def init_device_link_certificate_choice(request)
-      @called_request = request
-      response
+      def init_device_link_certificate_choice(request)
+        @called_request = request
+        response
+      end
     end
   end
 
-  let(:connector) { DeviceLinkCertificateChoiceTestConnector.new }
+  let(:connector) { connector_class.new }
   let(:builder) { described_class.new(connector) }
 
   before do
@@ -34,7 +36,11 @@ RSpec.describe SmartIdRuby::Flows::DeviceLinkCertificateChoiceSessionRequestBuil
   it "initiates certificate choice and maps request payload" do
     response = builder.init_certificate_choice
 
-    expect(response["sessionID"]).to eq("test-session-id")
+    expect(response).to be_a(SmartIdRuby::Models::DeviceLinkSessionResponse)
+    expect(response.session_id).to eq("test-session-id")
+    expect(response.session_token).to eq("test-session-token")
+    expect(response.session_secret).to eq("test-session-secret")
+    expect(response.device_link_base).to eq("https://example.com/device-link")
     expect(connector.called_request).to include(
       relyingPartyUUID: "test-relying-party-uuid",
       relyingPartyName: "DEMO",

@@ -1,25 +1,27 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartIdRuby::Flows::NotificationAuthenticationSessionRequestBuilder do
-  class NotificationAuthenticationTestConnector
-    attr_reader :called_method, :called_request, :called_argument
+  let(:connector_class) do
+    Class.new do
+      attr_reader :called_method, :called_request, :called_argument
 
-    def init_notification_authentication(request, semantics_identifier)
-      @called_method = :semantics
-      @called_request = request
-      @called_argument = semantics_identifier
-      { "sessionID" => "sid-1" }
-    end
+      def init_notification_authentication(request, semantics_identifier)
+        @called_method = :semantics
+        @called_request = request
+        @called_argument = semantics_identifier
+        { "sessionID" => "sid-1" }
+      end
 
-    def init_notification_authentication_with_document(request, document_number)
-      @called_method = :document
-      @called_request = request
-      @called_argument = document_number
-      { "sessionID" => "sid-1" }
+      def init_notification_authentication_with_document(request, document_number)
+        @called_method = :document
+        @called_request = request
+        @called_argument = document_number
+        { "sessionID" => "sid-1" }
+      end
     end
   end
 
-  let(:connector) { NotificationAuthenticationTestConnector.new }
+  let(:connector) { connector_class.new }
   let(:builder) { described_class.new(connector) }
   let(:rp_challenge) { Base64.strict_encode64("x" * 32) }
 
@@ -32,7 +34,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationAuthenticationSessionRequestBuild
 
   it "creates mapped payload and routes to document-number init by default setup" do
     builder.with_document_number("PNOLT-40504040001-MOCK-Q")
-    builder.init_authentication_session
+    response = builder.init_authentication_session
 
     expect(connector.called_method).to eq(:document)
     expect(connector.called_request[:signatureProtocol]).to eq("ACSP_V2")
@@ -41,6 +43,8 @@ RSpec.describe SmartIdRuby::Flows::NotificationAuthenticationSessionRequestBuild
     expect(connector.called_request[:interactions]).to be_a(String)
     expect(connector.called_request[:vcType]).to eq("numeric4")
     expect(builder.authentication_session_request).to eq(connector.called_request)
+    expect(response).to be_a(SmartIdRuby::Models::NotificationAuthenticationSessionResponse)
+    expect(response.session_id).to eq("sid-1")
   end
 
   it "routes to semantics-identifier connector method when provided" do

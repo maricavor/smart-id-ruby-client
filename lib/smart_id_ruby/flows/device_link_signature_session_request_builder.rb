@@ -96,7 +96,7 @@ module SmartIdRuby
         response = init_session(request)
         validate_response_parameters(response)
         @device_link_signature_session_request = request
-        response
+        SmartIdRuby::Models::DeviceLinkSessionResponse.from_h(response)
       end
 
       def signature_session_request

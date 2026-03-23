@@ -1,37 +1,38 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartIdRuby::Flows::DeviceLinkSignatureSessionRequestBuilder do
-  DeviceLinkSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
+  let(:signable_data_input_class) { Struct.new(:data_to_sign, :hash_algorithm) }
+  let(:connector_class) do
+    Class.new do
+      attr_reader :called_method, :called_request, :called_argument
+      attr_accessor :response
 
-  class DeviceLinkSignatureTestConnector
-    attr_reader :called_method, :called_request, :called_argument
-    attr_accessor :response
+      def initialize
+        @response = {
+          "sessionID" => "sid-1",
+          "sessionToken" => "token",
+          "sessionSecret" => "secret",
+          "deviceLinkBase" => "https://example.com/device-link"
+        }
+      end
 
-    def initialize
-      @response = {
-        "sessionID" => "sid-1",
-        "sessionToken" => "token",
-        "sessionSecret" => "secret",
-        "deviceLinkBase" => "https://example.com/device-link"
-      }
-    end
+      def init_device_link_signature(request, semantics_identifier)
+        @called_method = :semantics
+        @called_request = request
+        @called_argument = semantics_identifier
+        response
+      end
 
-    def init_device_link_signature(request, semantics_identifier)
-      @called_method = :semantics
-      @called_request = request
-      @called_argument = semantics_identifier
-      response
-    end
-
-    def init_device_link_signature_with_document(request, document_number)
-      @called_method = :document
-      @called_request = request
-      @called_argument = document_number
-      response
+      def init_device_link_signature_with_document(request, document_number)
+        @called_method = :document
+        @called_request = request
+        @called_argument = document_number
+        response
+      end
     end
   end
 
-  let(:connector) { DeviceLinkSignatureTestConnector.new }
+  let(:connector) { connector_class.new }
   let(:builder) { described_class.new(connector) }
 
   before do
@@ -43,7 +44,7 @@ RSpec.describe SmartIdRuby::Flows::DeviceLinkSignatureSessionRequestBuilder do
 
   it "creates mapped payload and routes to semantics connector" do
     builder.with_semantics_identifier("PNOEE-31111111111")
-    builder.init_signature_session
+    response = builder.init_signature_session
 
     expect(connector.called_method).to eq(:semantics)
     expect(connector.called_argument).to eq("PNOEE-31111111111")
@@ -51,6 +52,11 @@ RSpec.describe SmartIdRuby::Flows::DeviceLinkSignatureSessionRequestBuilder do
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithm]).to eq("rsassa-pss")
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]).to eq("SHA-512")
     expect(connector.called_request[:interactions]).to be_a(String)
+    expect(response).to be_a(SmartIdRuby::Models::DeviceLinkSessionResponse)
+    expect(response.session_id).to eq("sid-1")
+    expect(response.session_token).to eq("token")
+    expect(response.session_secret).to eq("secret")
+    expect(response.device_link_base).to eq("https://example.com/device-link")
   end
 
   it "routes to document-number connector when document number is provided" do
@@ -78,13 +84,13 @@ RSpec.describe SmartIdRuby::Flows::DeviceLinkSignatureSessionRequestBuilder do
   end
 
   it "uses provided hash algorithm for signable data object" do
-    builder.with_signable_data(DeviceLinkSignableDataInput.new("Test data", "SHA-256"))
+    builder.with_signable_data(signable_data_input_class.new("Test data", "SHA-256"))
     builder.with_semantics_identifier("PNOEE-31111111111")
     builder.init_signature_session
 
     digest = connector.called_request[:signatureProtocolParameters][:digest]
     hash_algorithm = connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]
-    expected = Base64.strict_encode64(OpenSSL::Digest::SHA256.digest("Test data"))
+    expected = Base64.strict_encode64(OpenSSL::Digest.digest("SHA256", "Test data"))
 
     expect(hash_algorithm).to eq("SHA-256")
     expect(digest).to eq(expected)

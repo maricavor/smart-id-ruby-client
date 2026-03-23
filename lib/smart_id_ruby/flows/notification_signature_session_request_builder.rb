@@ -88,7 +88,7 @@ module SmartIdRuby
         request = create_signature_session_request
         response = init_session(request)
         validate_response_parameters(response)
-        response
+        SmartIdRuby::Models::NotificationSignatureSessionResponse.from_h(response)
       end
 
       private

@@ -1,28 +1,29 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
-  NotificationSignableDataInput = Struct.new(:data_to_sign, :hash_algorithm)
-  NotificationSignableHashInput = Struct.new(:hash_to_sign, :hash_algorithm)
+  let(:signable_data_input_class) { Struct.new(:data_to_sign, :hash_algorithm) }
+  let(:signable_hash_input_class) { Struct.new(:hash_to_sign, :hash_algorithm) }
+  let(:connector_class) do
+    Class.new do
+      attr_reader :called_method, :called_request, :called_argument
 
-  class NotificationSignatureTestConnector
-    attr_reader :called_method, :called_request, :called_argument
+      def init_notification_signature(request, semantics_identifier)
+        @called_method = :semantics
+        @called_request = request
+        @called_argument = semantics_identifier
+        { "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "4927" } }
+      end
 
-    def init_notification_signature(request, semantics_identifier)
-      @called_method = :semantics
-      @called_request = request
-      @called_argument = semantics_identifier
-      { "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "4927" } }
-    end
-
-    def init_notification_signature_with_document(request, document_number)
-      @called_method = :document
-      @called_request = request
-      @called_argument = document_number
-      { "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "4927" } }
+      def init_notification_signature_with_document(request, document_number)
+        @called_method = :document
+        @called_request = request
+        @called_argument = document_number
+        { "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "4927" } }
+      end
     end
   end
 
-  let(:connector) { NotificationSignatureTestConnector.new }
+  let(:connector) { connector_class.new }
   let(:builder) { described_class.new(connector) }
 
   before do
@@ -34,7 +35,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
 
   it "creates mapped payload and routes to semantics init" do
     builder.with_semantics_identifier("PNOEE-30303039914")
-    builder.init_signature_session
+    response = builder.init_signature_session
 
     expect(connector.called_method).to eq(:semantics)
     expect(connector.called_argument).to eq("PNOEE-30303039914")
@@ -42,6 +43,9 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithm]).to eq("rsassa-pss")
     expect(connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]).to eq("SHA-512")
     expect(connector.called_request[:interactions]).to be_a(String)
+    expect(response).to be_a(SmartIdRuby::Models::NotificationSignatureSessionResponse)
+    expect(response.session_id).to eq("sid-1")
+    expect(response.vc).to eq({ "type" => "numeric4", "value" => "4927" })
   end
 
   it "uses SHA-512 by default for signable data digest input" do
@@ -50,20 +54,20 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
 
     digest = connector.called_request[:signatureProtocolParameters][:digest]
     hash_algorithm = connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]
-    expected = Base64.strict_encode64(OpenSSL::Digest::SHA512.digest("Test data"))
+    expected = Base64.strict_encode64(OpenSSL::Digest.digest("SHA512", "Test data"))
 
     expect(hash_algorithm).to eq("SHA-512")
     expect(digest).to eq(expected)
   end
 
   it "allows overriding hash algorithm for signable data input object" do
-    builder.with_signable_data(NotificationSignableDataInput.new("Test data", "SHA-256"))
+    builder.with_signable_data(signable_data_input_class.new("Test data", "SHA-256"))
     builder.with_semantics_identifier("PNOEE-30303039914")
     builder.init_signature_session
 
     digest = connector.called_request[:signatureProtocolParameters][:digest]
     hash_algorithm = connector.called_request[:signatureProtocolParameters][:signatureAlgorithmParameters][:hashAlgorithm]
-    expected = Base64.strict_encode64(OpenSSL::Digest::SHA256.digest("Test data"))
+    expected = Base64.strict_encode64(OpenSSL::Digest.digest("SHA256", "Test data"))
 
     expect(hash_algorithm).to eq("SHA-256")
     expect(digest).to eq(expected)
@@ -85,7 +89,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
 
   it "allows overriding hash algorithm for signable hash input object" do
     builder.with_signable_data(nil)
-    builder.with_signable_hash(NotificationSignableHashInput.new("raw hash bytes", "SHA-384"))
+    builder.with_signable_hash(signable_hash_input_class.new("raw hash bytes", "SHA-384"))
     builder.with_semantics_identifier("PNOEE-30303039914")
     builder.init_signature_session
 
@@ -165,7 +169,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc is missing" do
-    broken_connector = NotificationSignatureTestConnector.new
+    broken_connector = connector_class.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => nil })
     local_builder = described_class.new(broken_connector)
@@ -182,7 +186,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.type is missing" do
-    broken_connector = NotificationSignatureTestConnector.new
+    broken_connector = connector_class.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "", "value" => "4927" } })
     local_builder = described_class.new(broken_connector)
@@ -199,7 +203,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.value is missing" do
-    broken_connector = NotificationSignatureTestConnector.new
+    broken_connector = connector_class.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "" } })
     local_builder = described_class.new(broken_connector)
@@ -216,7 +220,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.value does not match required pattern" do
-    broken_connector = NotificationSignatureTestConnector.new
+    broken_connector = connector_class.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric4", "value" => "abcd" } })
     local_builder = described_class.new(broken_connector)
@@ -233,7 +237,7 @@ RSpec.describe SmartIdRuby::Flows::NotificationSignatureSessionRequestBuilder do
   end
 
   it "raises when response vc.type is unsupported" do
-    broken_connector = NotificationSignatureTestConnector.new
+    broken_connector = connector_class.new
     allow(broken_connector).to receive(:init_notification_signature)
       .and_return({ "sessionID" => "sid-1", "vc" => { "type" => "numeric6", "value" => "4927" } })
     local_builder = described_class.new(broken_connector)

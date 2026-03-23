@@ -45,7 +45,7 @@ module SmartIdRuby
         request = create_certificate_choice_request
         response = init_certificate_choice_session(request)
         validate_response_parameters(response)
-        response
+        SmartIdRuby::Models::NotificationCertificateChoiceSessionResponse.from_h(response)
       end
 
       private

@@ -1,22 +1,24 @@
 # frozen_string_literal: true
 
 RSpec.describe SmartIdRuby::Flows::NotificationCertificateChoiceSessionRequestBuilder do
-  class NotificationCertificateChoiceTestConnector
-    attr_reader :called_request, :called_semantics_identifier
-    attr_accessor :response
+  let(:connector_class) do
+    Class.new do
+      attr_reader :called_request, :called_semantics_identifier
+      attr_accessor :response
 
-    def initialize
-      @response = { "sessionID" => "00000000-0000-0000-0000-000000000000" }
-    end
+      def initialize
+        @response = { "sessionID" => "00000000-0000-0000-0000-000000000000" }
+      end
 
-    def init_notification_certificate_choice(request, semantics_identifier)
-      @called_request = request
-      @called_semantics_identifier = semantics_identifier
-      response
+      def init_notification_certificate_choice(request, semantics_identifier)
+        @called_request = request
+        @called_semantics_identifier = semantics_identifier
+        response
+      end
     end
   end
 
-  let(:connector) { NotificationCertificateChoiceTestConnector.new }
+  let(:connector) { connector_class.new }
   let(:builder) { described_class.new(connector) }
 
   before do
@@ -26,11 +28,13 @@ RSpec.describe SmartIdRuby::Flows::NotificationCertificateChoiceSessionRequestBu
   end
 
   it "inits certificate choice with semantics identifier" do
-    builder.init_certificate_choice
+    response = builder.init_certificate_choice
 
     expect(connector.called_semantics_identifier).to eq("PNOEE-48010010101")
     expect(connector.called_request[:relyingPartyUUID]).to eq("00000000-0000-4000-8000-000000000000")
     expect(connector.called_request[:relyingPartyName]).to eq("DEMO")
+    expect(response).to be_a(SmartIdRuby::Models::NotificationCertificateChoiceSessionResponse)
+    expect(response.session_id).to eq("00000000-0000-0000-0000-000000000000")
   end
 
   it "maps certificate level and nonce when set" do
