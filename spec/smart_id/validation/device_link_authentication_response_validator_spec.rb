@@ -234,7 +234,7 @@ RSpec.describe SmartIdRuby::Validation::DeviceLinkAuthenticationResponseValidato
 
   def sign_signature_value(signature_payload)
     payload = construct_payload(signature_payload)
-    digest = OpenSSL::Digest::SHA256.new
+    digest = OpenSSL::Digest.new("SHA256")
     signature = private_key.sign_pss(digest, payload, salt_length: 32, mgf1_hash: "SHA256")
     Base64.strict_encode64(signature)
   end
@@ -272,7 +272,7 @@ RSpec.describe SmartIdRuby::Validation::DeviceLinkAuthenticationResponseValidato
     cert.add_extension(ef.create_extension("basicConstraints", "CA:FALSE", true))
     cert.add_extension(ef.create_extension("keyUsage", "digitalSignature", true))
     cert.add_extension(ef.create_extension("extendedKeyUsage", "clientAuth", false))
-    cert.sign(key, OpenSSL::Digest::SHA256.new)
+    cert.sign(key, OpenSSL::Digest.new("SHA256"))
     {
       certificate_value: Base64.strict_encode64(cert.to_der),
       private_key: key

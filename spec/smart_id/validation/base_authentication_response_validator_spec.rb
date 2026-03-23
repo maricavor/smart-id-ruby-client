@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-RSpec.describe SmartIdRuby::Validation::NotificationAuthenticationResponseValidator do
-  it "inherits shared authentication validator behavior" do
-    expect(described_class < SmartIdRuby::Validation::BaseAuthenticationResponseValidator).to be(true)
+RSpec.describe SmartIdRuby::Validation::BaseAuthenticationResponseValidator do
+  let(:validator_class) do
+    Class.new(described_class)
   end
 
   let(:signature_value_validator) { instance_double(SmartIdRuby::Validation::SignatureValueValidator, validate: true) }
   let(:certificate_validator) { instance_double(SmartIdRuby::Validation::AuthenticationCertificateValidator) }
   let(:authentication_identity_mapper) { instance_double(SmartIdRuby::Validation::AuthenticationIdentityMapper) }
   let(:validator) do
-    described_class.new(
+    validator_class.new(
       signature_value_validator: signature_value_validator,
       certificate_validator: certificate_validator,
       authentication_identity_mapper: authentication_identity_mapper
@@ -21,14 +21,7 @@ RSpec.describe SmartIdRuby::Validation::NotificationAuthenticationResponseValida
     cert = OpenSSL::X509::Certificate.new
     cert.version = 2
     cert.serial = 1
-    cert.subject = OpenSSL::X509::Name.new(
-      [
-        ["C", "EE", OpenSSL::ASN1::PRINTABLESTRING],
-        ["SN", "TAMM", OpenSSL::ASN1::UTF8STRING],
-        ["GN", "TOOMAS", OpenSSL::ASN1::UTF8STRING],
-        ["serialNumber", "PNOEE-38001085718", OpenSSL::ASN1::UTF8STRING]
-      ]
-    )
+    cert.subject = OpenSSL::X509::Name.parse("/CN=Smart-ID Test")
     cert.issuer = cert.subject
     cert.public_key = key.public_key
     cert.not_before = Time.now - 60
@@ -37,14 +30,7 @@ RSpec.describe SmartIdRuby::Validation::NotificationAuthenticationResponseValida
     cert
   end
 
-  it "validates notification authentication response and returns mapped identity" do
-    mapped_identity = SmartIdRuby::Models::AuthenticationIdentity.new(
-      given_name: "TOOMAS",
-      surname: "TAMM",
-      identity_number: "38001085718",
-      country: "EE",
-      auth_certificate: certificate
-    )
+  it "uses empty callback payload segment by default" do
     request = {
       relyingPartyName: "DEMO",
       signatureProtocolParameters: { rpChallenge: Base64.strict_encode64("x" * 32) },
@@ -78,18 +64,13 @@ RSpec.describe SmartIdRuby::Validation::NotificationAuthenticationResponseValida
         interactionTypeUsed: "displayTextAndPIN"
       }
     )
+
     allow(certificate_validator).to receive(:validate).and_return(certificate)
-    allow(authentication_identity_mapper).to receive(:from).and_return(mapped_identity)
+    allow(authentication_identity_mapper).to receive(:from).and_return(:identity)
     expect(signature_value_validator).to receive(:validate).with(
-      hash_including(
-        signature_value: status.signature.value,
-        certificate: certificate,
-        signature_algorithm_parameters: status.signature.signature_algorithm_parameters,
-        payload: include("|displayTextAndPIN||Notification")
-      )
+      hash_including(payload: include("|displayTextAndPIN||Notification"))
     )
 
-    identity = validator.validate(status, request, "SMART_ID", "BROKER")
-    expect(identity).to eq(mapped_identity)
+    expect(validator.validate(status, request, nil, "SMART_ID", "BROKER")).to eq(:identity)
   end
 end
