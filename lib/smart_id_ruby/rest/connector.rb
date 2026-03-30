@@ -248,7 +248,7 @@ module SmartIdRuby
         headers = default_headers
         logger.debug("#{method.to_s.upcase} #{url}")
         if method == :post && logger.respond_to?(:debug?) && logger.debug?
-          logger.debug("Request body: #{JSON.generate(body)}")
+          logger.debug("Request body: #{safe_json_for_log(body)}")
         end
 
         response = if method == :get
@@ -257,6 +257,7 @@ module SmartIdRuby
                      connection.post(url, JSON.generate(body), headers)
                    end
         logger.debug("Response status: #{response.status}")
+        logger.debug("Response body: #{truncate_for_log(response.body)}")
         response
       end
 
@@ -284,6 +285,7 @@ module SmartIdRuby
 
       def handle_client_error(error)
         status = error.response[:status].to_i
+        logger.debug("Client error response status=#{status}, body=#{truncate_for_log(error.response[:body])}")
         case status
         when 471
           logger.warn("No suitable account of requested type found, but user has some other accounts")
@@ -302,6 +304,7 @@ module SmartIdRuby
 
       def handle_server_error(error)
         status = error.response[:status].to_i
+        logger.debug("Server error response status=#{status}, body=#{truncate_for_log(error.response[:body])}")
         if status == 580
           logger.warn("Server is under maintenance, retry later")
           raise SmartIdRuby::Errors::ServerMaintenanceError
@@ -341,6 +344,20 @@ module SmartIdRuby
 
       def logger
         SmartIdRuby.logger
+      end
+
+      def safe_json_for_log(value)
+        json = JSON.generate(value)
+        truncate_for_log(json)
+      rescue StandardError
+        "<unserializable request body>"
+      end
+
+      def truncate_for_log(value, max = 2_000)
+        text = value.is_a?(String) ? value : value.inspect
+        return text if text.length <= max
+
+        "#{text[0, max]}...(truncated #{text.length - max} chars)"
       end
     end
   end

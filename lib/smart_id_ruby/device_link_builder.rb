@@ -127,13 +127,18 @@ module SmartIdRuby
       ]
       query_params << ["elapsedSeconds", @elapsed_seconds.to_s] unless @elapsed_seconds.nil?
 
-      append_query_params(@device_link_base, query_params)
+      uri = append_query_params(@device_link_base, query_params)
+      logger.debug("Created unprotected device link URI=#{sanitize_uri(uri)}")
+      uri
     end
 
     def build_device_link(session_secret)
       unprotected_uri = create_unprotected_uri
+      logger.debug("Building protected device link with scheme=#{@scheme_name}, session_type=#{@session_type}, device_link_type=#{@device_link_type}")
       auth_code = generate_auth_code(unprotected_uri.to_s, session_secret)
-      append_query_params(unprotected_uri.to_s, [["authCode", auth_code]])
+      uri = append_query_params(unprotected_uri.to_s, [["authCode", auth_code]])
+      logger.debug("Built protected device link URI=#{sanitize_uri(uri)}")
+      uri
     end
 
     private
@@ -192,7 +197,10 @@ module SmartIdRuby
         or_empty(@interactions),
         or_empty(@initial_callback_url),
         unprotected_link
-      ].join('|')
+      ].join("|")
+      logger.debug("Generating authCode payload metadata scheme=#{@scheme_name},
+        protocol=#{signature_protocol_for_session}, has_digest=#{!blank?(@digest)},
+        has_interactions=#{!blank?(@interactions)}, has_callback=#{!blank?(@initial_callback_url)}")
 
       session_secret = Base64.decode64(session_secret_base64)
       hmac = OpenSSL::HMAC.digest(
@@ -265,6 +273,25 @@ module SmartIdRuby
 
     def raise_request_setup_error(message)
       raise SmartIdRuby::Errors::RequestSetupError, message
+    end
+
+    def logger
+      SmartIdRuby.logger
+    end
+
+    def sanitize_uri(uri)
+      parsed = URI.parse(uri.to_s)
+      query = URI.decode_www_form(parsed.query.to_s).map do |key, value|
+        [key, sensitive_param?(key) ? "[FILTERED]" : value]
+      end
+      parsed.query = URI.encode_www_form(query)
+      parsed.to_s
+    rescue StandardError
+      uri.to_s
+    end
+
+    def sensitive_param?(name)
+      %w[sessionToken authCode].include?(name.to_s)
     end
   end
 end
