@@ -193,12 +193,16 @@ module SmartIdRuby
       def normalize_diacritics(value)
         return nil if value.nil?
 
-        text = value.to_s
+        text = value.to_s.dup
+
+        # Legacy certificates / libraries sometimes encode diacritics as \xNN escape
+        # sequences in the distinguished name string. Convert those into bytes first.
         if text.include?("\\x")
           text = text.gsub(/\\x([0-9A-Fa-f]{2})/) { Regexp.last_match(1).hex.chr }
         end
-        text.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "")
-      rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+
+        # Then interpret as UTF-8 and scrub only truly invalid byte sequences,
+        # preserving valid characters like Õ, Ä, Ö, Ü, etc.
         text.force_encoding(Encoding::UTF_8).scrub
       end
 
