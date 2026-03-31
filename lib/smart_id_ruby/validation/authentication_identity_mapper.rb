@@ -30,8 +30,8 @@ module SmartIdRuby
         country = attrs["C"]
 
         SmartIdRuby::Models::AuthenticationIdentity.new(
-          given_name: attrs["GN"] || attrs["givenName"] || attrs["GIVENNAME"],
-          surname: attrs["SN"] || attrs["surname"] || attrs["SURNAME"],
+          given_name: normalize_diacritics(attrs["GN"] || attrs["givenName"] || attrs["GIVENNAME"]),
+          surname: normalize_diacritics(attrs["SN"] || attrs["surname"] || attrs["SURNAME"]),
           identity_number: identity_number,
           country: country,
           auth_certificate: certificate,
@@ -176,6 +176,23 @@ module SmartIdRuby
 
       def blank?(value)
         value.nil? || value.to_s.strip.empty?
+      end
+
+      # Converts legacy escaped byte sequences inside DN values to proper UTF-8.
+      # Example:
+      #   "J\\xC4\\x81nis B\\xC4\\x93rzi\\xC5\\x86\\xC5\\xA1" (ASCII-8BIT)
+      # becomes:
+      #   "Jānis Bērziņš" (UTF-8)
+      def normalize_diacritics(value)
+        return nil if value.nil?
+
+        text = value.to_s
+        if text.include?("\\x")
+          text = text.gsub(/\\x([0-9A-Fa-f]{2})/) { Regexp.last_match(1).hex.chr }
+        end
+        text.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "")
+      rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+        text.force_encoding(Encoding::UTF_8).scrub
       end
     end
   end
