@@ -26,12 +26,19 @@ module SmartIdRuby
       def from(certificate)
         attrs = extract_subject_attributes(certificate)
 
+        raw_given_name = attrs["GN"] || attrs["givenName"] || attrs["GIVENNAME"]
+        raw_surname = attrs["SN"] || attrs["surname"] || attrs["SURNAME"]
         identity_number = normalize_identity_number(attrs["serialNumber"] || attrs["SERIALNUMBER"])
         country = attrs["C"]
 
+        given_name = normalize_diacritics(raw_given_name)
+        surname = normalize_diacritics(raw_surname)
+
+        log_debug_identity_attrs(raw_given_name, given_name, raw_surname, surname, identity_number, country)
+
         SmartIdRuby::Models::AuthenticationIdentity.new(
-          given_name: normalize_diacritics(attrs["GN"] || attrs["givenName"] || attrs["GIVENNAME"]),
-          surname: normalize_diacritics(attrs["SN"] || attrs["surname"] || attrs["SURNAME"]),
+          given_name: given_name,
+          surname: surname,
           identity_number: identity_number,
           country: country,
           auth_certificate: certificate,
@@ -193,6 +200,23 @@ module SmartIdRuby
         text.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "")
       rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
         text.force_encoding(Encoding::UTF_8).scrub
+      end
+
+      def log_debug_identity_attrs(raw_given_name, given_name, raw_surname, surname, identity_number, country)
+        logger = SmartIdRuby.logger
+
+        logger.debug(
+          "Smart-ID identity mapping: " \
+          "raw_given_name=#{raw_given_name}, " \
+          "normalized_given_name=#{given_name}, " \
+          "raw_surname=#{raw_surname}, " \
+          "normalized_surname=#{surname}, " \
+          "identity_number_suffix=#{identity_number && identity_number[-4, 4]}, " \
+          "country=#{country}"
+        )
+      rescue StandardError
+        # Logging must never break authentication flow
+        nil
       end
     end
   end
