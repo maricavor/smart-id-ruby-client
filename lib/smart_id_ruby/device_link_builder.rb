@@ -119,13 +119,17 @@ module SmartIdRuby
       validate_input_parameters!
 
       query_params = [
-        ["deviceLinkType", @device_link_type],
-        ["sessionToken", @session_token],
-        ["sessionType", @session_type],
-        ["version", @version],
-        ["lang", @lang]
+        ["deviceLinkType", @device_link_type]
       ]
       query_params << ["elapsedSeconds", @elapsed_seconds.to_s] unless @elapsed_seconds.nil?
+      query_params.concat(
+        [
+          ["sessionToken", @session_token],
+          ["sessionType", @session_type],
+          ["version", @version],
+          ["lang", @lang]
+        ]
+      )
 
       uri = append_query_params(@device_link_base, query_params)
       logger.debug("Created unprotected device link URI=#{sanitize_uri(uri)}")
