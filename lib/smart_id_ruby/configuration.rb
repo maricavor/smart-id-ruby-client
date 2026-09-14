@@ -16,6 +16,8 @@ module SmartIdRuby
       truststore_path: nil,
       truststore_type: nil,
       truststore_password: nil,
+      # Which bundled SK CA set the response validators trust: :production or :demo.
+      trusted_ca_environment: :production,
       tls_config: nil,
       network_connection_config: nil,
       configured_connection: nil
