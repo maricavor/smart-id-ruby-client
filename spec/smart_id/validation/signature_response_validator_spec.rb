@@ -28,6 +28,18 @@ RSpec.describe SmartIdRuby::Validation::SignatureResponseValidator do
     cert
   end
 
+  # The validator reads policy OIDs out of the extension's string value, so a double is
+  # enough and avoids OpenSSL's certificatePolicies syntax.
+  def certificate_double(policy_oids)
+    key_usage = instance_double("OpenSSL::X509::Extension", oid: "keyUsage", value: "Non Repudiation")
+    extensions = [key_usage]
+    unless policy_oids.nil?
+      extensions << instance_double("OpenSSL::X509::Extension",
+                                    oid: "certificatePolicies", value: policy_oids.join(","))
+    end
+    instance_double("OpenSSL::X509::Certificate", extensions: extensions)
+  end
+
   let(:valid_status) do
     {
       "state" => "COMPLETE",
@@ -56,6 +68,9 @@ RSpec.describe SmartIdRuby::Validation::SignatureResponseValidator do
   end
 
   it "returns mapped signature response on valid session status" do
+    allow(validator).to receive(:parse_certificate)
+      .and_return(certificate_double(["1.3.6.1.4.1.10015.17.1", "0.4.0.2042.1.1"]))
+
     response = validator.validate(valid_status, "ADVANCED")
 
     expect(response).to be_a(SmartIdRuby::Models::SignatureResponse)
@@ -120,5 +135,43 @@ RSpec.describe SmartIdRuby::Validation::SignatureResponseValidator do
 
     response = validator.validate(status, "QUALIFIED")
     expect(response.certificate_level).to eq("QUALIFIED")
+  end
+
+  describe "ADVANCED certificates" do
+    it "accepts a certificate carrying the non-qualified Smart-ID policy OIDs" do
+      allow(validator).to receive(:parse_certificate)
+        .and_return(certificate_double(["1.3.6.1.4.1.10015.17.1", "0.4.0.2042.1.1"]))
+
+      expect(validator.validate(valid_status, "ADVANCED").certificate_level).to eq("ADVANCED")
+    end
+
+    it "rejects a certificate with no policy OIDs at all" do
+      allow(validator).to receive(:parse_certificate).and_return(certificate_double(nil))
+
+      expect { validator.validate(valid_status, "ADVANCED") }.to raise_error(
+        SmartIdRuby::Errors::UnprocessableResponseError,
+        /does not have certificate policy OIDs and is not a non-qualified Smart-ID certificate/
+      )
+    end
+
+    it "rejects a certificate that is not a Smart-ID certificate" do
+      allow(validator).to receive(:parse_certificate)
+        .and_return(certificate_double(["1.2.3.4", "0.4.0.2042.1.1"]))
+
+      expect { validator.validate(valid_status, "ADVANCED") }.to raise_error(
+        SmartIdRuby::Errors::UnprocessableResponseError,
+        /Certificate is not a non-qualified Smart-ID certificate/
+      )
+    end
+
+    it "rejects a certificate carrying only the qualified policy OIDs" do
+      allow(validator).to receive(:parse_certificate)
+        .and_return(certificate_double(["1.3.6.1.4.1.10015.17.2", "0.4.0.194112.1.2"]))
+
+      expect { validator.validate(valid_status, "ADVANCED") }.to raise_error(
+        SmartIdRuby::Errors::UnprocessableResponseError,
+        /Certificate is not a non-qualified Smart-ID certificate/
+      )
+    end
   end
 end
