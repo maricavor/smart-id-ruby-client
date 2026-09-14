@@ -216,13 +216,8 @@ module SmartIdRuby
       rescue Faraday::ResourceNotFound
         logger.warn("Session or resource not found for path #{path}")
         raise(not_found_error || SmartIdRuby::Errors::UserAccountNotFoundError)
-      rescue Faraday::UnauthorizedError, Faraday::ForbiddenError => e
-        logger.warn("Request is unauthorized for path #{path}: #{e.message}")
-        raise SmartIdRuby::Errors::RelyingPartyAccountConfigurationError, e.message
-      rescue Faraday::ClientError => e
-        handle_client_error(e)
-      rescue Faraday::ServerError => e
-        handle_server_error(e)
+      rescue Faraday::Error => e
+        handle_faraday_error(e, path)
       end
 
       def post(path, body:)
@@ -231,16 +226,25 @@ module SmartIdRuby
       rescue Faraday::ResourceNotFound
         logger.warn("User account not found for path #{path}")
         raise SmartIdRuby::Errors::UserAccountNotFoundError
-      rescue Faraday::UnauthorizedError, Faraday::ForbiddenError => e
-        logger.warn("No permission to issue request for path #{path}: #{e.message}")
-        raise SmartIdRuby::Errors::RelyingPartyAccountConfigurationError, e.message
       rescue Faraday::BadRequestError => e
         logger.warn("Request is invalid for path #{path}: #{e.message}")
         raise SmartIdRuby::Errors::RequestValidationError, e.message
-      rescue Faraday::ClientError => e
-        handle_client_error(e)
-      rescue Faraday::ServerError => e
-        handle_server_error(e)
+      rescue Faraday::Error => e
+        handle_faraday_error(e, path)
+      end
+
+      # Shared tail of the rescue chains above. Faraday::TimeoutError has to be matched
+      # before Faraday::ServerError, which it inherits from.
+      def handle_faraday_error(error, path)
+        case error
+        when Faraday::UnauthorizedError, Faraday::ForbiddenError
+          logger.warn("Request is unauthorized for path #{path}: #{error.message}")
+          raise SmartIdRuby::Errors::RelyingPartyAccountConfigurationError, error.message
+        when Faraday::TimeoutError then handle_timeout_error(error, path)
+        when Faraday::ClientError then handle_client_error(error)
+        when Faraday::ServerError then handle_server_error(error)
+        else raise_without_response(error)
+        end
       end
 
       def perform_request(method, path, query: nil, body: nil)
@@ -283,9 +287,32 @@ module SmartIdRuby
         raise SmartIdRuby::Errors::ResponseError, "Failed to parse Smart-ID response body: #{e.message}"
       end
 
+      def handle_timeout_error(error, path)
+        logger.warn("Request to #{path} timed out: #{error.message}")
+        raise SmartIdRuby::Errors::NetworkTimeoutError
+      end
+
+      # Faraday errors raised by the adapter rather than by a response — a timeout or a
+      # dropped connection — carry no response hash, so reading error.response[:status]
+      # would raise NoMethodError and mask the real failure.
+      def error_response(error)
+        response = error.response
+        response.is_a?(Hash) ? response : nil
+      end
+
+      def raise_without_response(error)
+        logger.warn("Request failed without a response: #{error.class}: #{error.message}")
+        raise SmartIdRuby::Errors::NetworkTimeoutError if error.is_a?(Faraday::TimeoutError)
+
+        raise SmartIdRuby::Errors::ResponseError, error.message
+      end
+
       def handle_client_error(error)
-        status = error.response[:status].to_i
-        logger.debug("Client error response status=#{status}, body=#{truncate_for_log(error.response[:body])}")
+        response = error_response(error)
+        return raise_without_response(error) if response.nil?
+
+        status = response[:status].to_i
+        logger.debug("Client error response status=#{status}, body=#{truncate_for_log(response[:body])}")
         case status
         when 471
           logger.warn("No suitable account of requested type found, but user has some other accounts")
@@ -303,8 +330,11 @@ module SmartIdRuby
       end
 
       def handle_server_error(error)
-        status = error.response[:status].to_i
-        logger.debug("Server error response status=#{status}, body=#{truncate_for_log(error.response[:body])}")
+        response = error_response(error)
+        return raise_without_response(error) if response.nil?
+
+        status = response[:status].to_i
+        logger.debug("Server error response status=#{status}, body=#{truncate_for_log(response[:body])}")
         if status == 580
           logger.warn("Server is under maintenance, retry later")
           raise SmartIdRuby::Errors::ServerMaintenanceError
