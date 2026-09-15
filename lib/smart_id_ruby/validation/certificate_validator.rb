@@ -8,8 +8,12 @@ module SmartIdRuby
   module Validation
     # Validates X.509 certificate validity period and trust chain.
     class CertificateValidator
-      def initialize(trusted_ca_cert_store: nil, use_system_store: true)
-        @trusted_ca_cert_store = trusted_ca_cert_store
+      # Defaults to the CA certificates bundled with the gem for the configured
+      # environment (see TrustedCaCertStore). Pass `trusted_ca_cert_store: nil` explicitly
+      # to validate against the system CA store alone — which does not contain SK's eID
+      # CAs, so every Smart-ID certificate will fail to chain.
+      def initialize(trusted_ca_cert_store: :default, use_system_store: true)
+        @trusted_ca_cert_store = trusted_ca_cert_store == :default ? TrustedCaCertStore.default : trusted_ca_cert_store
         @use_system_store = use_system_store
       end
 

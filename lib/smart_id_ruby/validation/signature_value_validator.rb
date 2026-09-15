@@ -27,10 +27,13 @@ module SmartIdRuby
 
         raise SmartIdRuby::Errors::UnprocessableResponseError,
               "Provided signature value does not match the calculated signature value"
+      # Gem errors are already precise — re-raise them before the catch-all below, or the
+      # "Parameter 'x' is not provided" errors from validate_inputs get rewritten into a
+      # generic validation failure.
+      rescue SmartIdRuby::Errors::Error
+        raise
       rescue OpenSSL::PKey::PKeyError, ArgumentError
         raise SmartIdRuby::Errors::UnprocessableResponseError, "Invalid signature algorithm parameters were provided"
-      rescue SmartIdRuby::Errors::UnprocessableResponseError
-        raise
       rescue StandardError
         raise SmartIdRuby::Errors::UnprocessableResponseError, "Signature value validation failed"
       end

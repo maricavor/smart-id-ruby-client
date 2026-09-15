@@ -15,6 +15,8 @@ module SmartIdRuby
       QC_STATEMENTS_EXTENSION_OID = "1.3.6.1.5.5.7.1.3"
       QC_TYPE_STATEMENT_OID = "0.4.0.1862.1.6"
       QUALIFIED_ELECTRONIC_SIGNATURE_OID = "0.4.0.1862.1.6.1"
+      QUALIFIED_CERTIFICATE_POLICY_OIDS = ["1.3.6.1.4.1.10015.17.2", "0.4.0.194112.1.2"].freeze
+      NON_QUALIFIED_CERTIFICATE_POLICY_OIDS = ["1.3.6.1.4.1.10015.17.1", "0.4.0.2042.1.1"].freeze
       SUPPORTED_HASH_ALGORITHMS = {
         "SHA-256" => 32,
         "SHA-384" => 48,
@@ -119,19 +121,37 @@ module SmartIdRuby
         unless key_usage.match?(/Non[- ]Repudiation/i)
           raise SmartIdRuby::Errors::UnprocessableResponseError, "Certificate does not have Non-Repudiation set in 'KeyUsage' extension"
         end
-        return if certificate_level == "ADVANCED"
+        return validate_non_qualified_certificate(certificate) if certificate_level == "ADVANCED"
 
+        validate_qualified_certificate(certificate)
+      end
+
+      def validate_qualified_certificate(certificate)
         policy_oids = extract_certificate_policy_oids(certificate)
         if policy_oids.empty?
           raise SmartIdRuby::Errors::UnprocessableResponseError, "Certificate does not have certificate policy OIDs"
         end
 
-        required = ["1.3.6.1.4.1.10015.17.2", "0.4.0.194112.1.2"]
-        unless (required - policy_oids).empty?
+        unless (QUALIFIED_CERTIFICATE_POLICY_OIDS - policy_oids).empty?
           raise SmartIdRuby::Errors::UnprocessableResponseError,
                 "Certificate does not contain required qualified certificate policy OIDs"
         end
         validate_certificate_can_be_used_for_qualified_electronic_signature(certificate)
+      end
+
+      # An ADVANCED signature certificate must still be a Smart-ID one: without this check
+      # any Non-Repudiation certificate from any CA in the trust store would be accepted.
+      def validate_non_qualified_certificate(certificate)
+        policy_oids = extract_certificate_policy_oids(certificate)
+        if policy_oids.empty?
+          raise SmartIdRuby::Errors::UnprocessableResponseError,
+                "Certificate does not have certificate policy OIDs and is not a non-qualified Smart-ID certificate"
+        end
+
+        return if (NON_QUALIFIED_CERTIFICATE_POLICY_OIDS - policy_oids).empty?
+
+        raise SmartIdRuby::Errors::UnprocessableResponseError,
+              "Certificate is not a non-qualified Smart-ID certificate"
       end
 
       def validate_certificate_can_be_used_for_qualified_electronic_signature(certificate)

@@ -384,7 +384,44 @@ client.configured_connection = Faraday.new(url: client.host_url) do |f|
 end
 ```
 
-### Trusting custom CA certificates
+### Trusting Smart-ID signer certificates
+
+Smart-ID signer and authentication certificates chain to SK ID Solutions' own eID CAs,
+which are **not** in any operating system CA bundle — that store holds TLS roots. The gem
+therefore ships SK's CA certificates for both environments, and the validators use them by
+default, so nothing needs configuring in production:
+
+```ruby
+SmartIdRuby::Validation::SignatureResponseValidator.new.validate(session_status, "QUALIFIED")
+```
+
+Against the demo service (`sid.demo.sk.ee`), point the validators at the demo CAs:
+
+```ruby
+SmartIdRuby.configure do |config|
+  config.trusted_ca_environment = :demo # :production (default) or :demo
+end
+```
+
+The two sets are never merged: a demo certificate is rejected by the production store and
+vice versa. To supply your own CA certificates instead — an internal truststore, or a CA
+SK adds before this gem is updated:
+
+```ruby
+store = SmartIdRuby::Validation::TrustedCaCertStore.from_pkcs12("truststore.p12", "changeit")
+# or .from_directory("/etc/smart-id/ca")  -- 'anchors/' + 'intermediates/', or a flat directory
+# or .from_certificates([cert, ...])      -- self-signed ones become the trust anchors
+
+validator = SmartIdRuby::Validation::CertificateValidator.new(trusted_ca_cert_store: store)
+SmartIdRuby::Validation::SignatureResponseValidator.new(certificate_validator: validator)
+```
+
+The bundled certificates are in `certificates/production` and `certificates/demo`
+(`anchors/` are the self-signed roots, `intermediates/` the issuing CAs).
+
+### Trusting custom TLS CA certificates
+
+This is about the TLS connection to the Smart-ID API, not about signer certificates.
 
 ```ruby
 cert_store = OpenSSL::X509::Store.new
